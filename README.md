@@ -2,7 +2,7 @@
 
 # local-library
 
-An example library management application built with Golang and Postgres on the backend and React on the front.
+An example library management application built with Golang and MySQL on the backend and React on the front.
 
 ### Requirements (Given)
 
