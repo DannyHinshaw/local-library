@@ -43,6 +43,7 @@ jobs:
           state: success
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - if: failure()
         uses: ouzi-dev/commit-status-updater@v0.1.1
         with:
