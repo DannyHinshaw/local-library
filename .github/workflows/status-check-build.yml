@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    name: Build Check Status
+    name: Backend Build Check Status
     runs-on: ubuntu-latest
     steps:
       - name: Check out code into the Go module directory
