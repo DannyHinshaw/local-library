@@ -31,10 +31,10 @@ jobs:
         run: |
           go get -v -t -d ./...
       - name: Build
-        run: go build -v .
+        run: cd backend && go build -v .
 
       - name: Test
-        run: go test ./...
+        run: cd backend && go test ./...
 
         # Set status
       - if: success()
