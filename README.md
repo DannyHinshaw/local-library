@@ -1,3 +1,5 @@
+![Status Check Build](https://github.com/DannyHinshaw/local-library/workflows/Status%20Check%20Build/badge.svg)
+
 # local-library
 
 An example library management application built with Golang and Postgres on the backend and React on the front.
