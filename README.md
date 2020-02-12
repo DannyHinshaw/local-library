@@ -1,4 +1,4 @@
-![Status Check Build](https://github.com/DannyHinshaw/local-library/workflows/Status%20Check%20Build/badge.svg)
+![Golang Build Status Check](https://github.com/DannyHinshaw/local-library/workflows/Golang%20Build%20Status%20Check/badge.svg)
 
 # local-library
 
