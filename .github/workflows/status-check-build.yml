@@ -1,4 +1,4 @@
-name: Status Check Build
+name: Golang Build Status Check
 
 on:
   pull_request:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    name: Backend Build Check Status
+    name: Golang Build Status Check
     runs-on: ubuntu-latest
     steps:
       - name: Check out code into the Go module directory
