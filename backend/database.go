@@ -18,17 +18,17 @@ func logTableCreated(s string) {
 // addConstraints - Since GORM annotations are still broken for foreign keys we do it manually here.
 func addConstraints(db *gorm.DB) *gorm.DB {
 	log.Println("adding db table constraints")
-	db.Model(Book{}).AddForeignKey(
+	db.Table("BooksAuthors").AddForeignKey(
+		"book_isbn",
+		"books(isbn)",
+		"CASCADE",
+		"CASCADE",
+	)
+	db.Table("BooksAuthors").AddForeignKey(
 		"author_id",
 		"authors(id)",
-		"SET DEFAULT",
-		"SET DEFAULT",
-	)
-	db.Model(Event{}).AddForeignKey(
-		"isbn",
-		"books(isbn)",
-		"SET DEFAULT",
-		"SET DEFAULT",
+		"CASCADE",
+		"CASCADE",
 	)
 
 	return db
@@ -54,7 +54,11 @@ func initTables(db *gorm.DB) *gorm.DB {
 		logTableCreated("books")
 	}
 
-	return addConstraints(db)
+	if !hasAuthors || !hasEvents || !hasBooks {
+		return addConstraints(db)
+	}
+
+	return db
 }
 
 // getClient - Util function to create mysql gorm client (deferred Close() in root/main.go).
