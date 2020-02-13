@@ -3,10 +3,13 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/gorilla/mux"
 	uuid "github.com/satori/go.uuid"
+	gormbulk "github.com/t-tiger/gorm-bulk-insert"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"net/http"
 	"os"
 	"time"
@@ -19,6 +22,31 @@ type HealthResponse struct {
 type SeedBook struct {
 	Book
 	Author string `json:"author"`
+}
+
+type PostBookPayload struct {
+	Book
+	AuthorIds []uuid.UUID `json:"author_ids"`
+}
+
+type EmptyItemResponse struct {
+	Data interface{} `json:"data"`
+}
+
+type AuthorsResponse struct {
+	Data []Author `json:"data"`
+}
+
+type AuthorResponse struct {
+	Data Author `json:"data"`
+}
+
+type BooksResponse struct {
+	Data []Book `json:"data"`
+}
+
+type BookResponse struct {
+	Data Book `json:"data"`
 }
 
 // Common request errors
@@ -34,6 +62,14 @@ func HandleErrorResponse(w http.ResponseWriter, err error, status int) {
 	msg := err.Error()
 	log.Println(msg)
 	http.Error(w, msg, status)
+}
+
+// getRandomNumber - Generate random number for books copies.
+func getRandomNumber() int {
+	min := 1
+	max := 3
+	rand.Seed(time.Now().UnixNano())
+	return rand.Intn(max-min+1) + min
 }
 
 // getSeedDataAuthors - Retrieve test author data from json file.
@@ -101,30 +137,29 @@ func queryAuthorWithParamID(r *http.Request) (*Author, error) {
 		return nil, err
 	}
 
-	query := &Author{
-		Base: Base{
-			ID: uid,
-		},
-	}
-
+	query := &Author{ID: uid}
 	return query, nil
 }
 
-// queryBookWithParamID - Build gorm book query with id from url params.
-func queryBookWithParamID(r *http.Request) (*Book, error) {
+// queryBookWithParamISBN - Build gorm book query with id from url params.
+func queryBookWithParamISBN(r *http.Request) (*Book, error) {
 	params := mux.Vars(r)
 	isbn := params["isbn"]
 	if isbn == "" {
 		return nil, errorBookISBN
 	}
 
-	query := &Book{
-		BaseBook: BaseBook{
-			ISBN: isbn,
-		},
-	}
-
+	query := &Book{ISBN: isbn}
 	return query, nil
+}
+
+// isInvalidAuthor - Check if author provided is missing data.
+func isInvalidAuthor(author Author) bool {
+	hasNoFirst := author.FirstName == ""
+	hasNoLast := author.LastName == ""
+	hasNoMiddle := author.Middle == ""
+
+	return hasNoFirst && hasNoLast && hasNoMiddle
 }
 
 /* =======================================================
@@ -148,8 +183,14 @@ func GetSeedDatabase(w http.ResponseWriter, r *http.Request) {
 
 	// Wipe the db on every request for quick dev testing
 	MySQL.Unscoped().Delete(&Book{})
-	MySQL.Unscoped().Delete(&Author{})
 	MySQL.Unscoped().Delete(&Event{})
+	MySQL.Unscoped().Delete(&Author{})
+	MySQL.Unscoped().Delete(&BooksAuthors{})
+
+	// Gather all seed data for bulk inserts
+	var insertBooksAuthorsRecords []interface{}
+	var insertAuthorRecords []interface{}
+	var insertBookRecords []interface{}
 
 	authors := getSeedDataAuthors()
 	books := getSeedDataBooks()
@@ -159,32 +200,53 @@ func GetSeedDatabase(w http.ResponseWriter, r *http.Request) {
 				now := time.Now()
 				newAuthor := Author{
 					Base: Base{
-						ID:        author.ID,
 						CreatedAt: now,
 						UpdatedAt: now,
 					},
 					FirstName: author.FirstName,
 					LastName:  author.LastName,
 					Middle:    author.Middle,
+					ID:        author.ID,
 				}
+				n := getRandomNumber()
 				newBook := Book{
+					ISBN: book.ISBN,
 					Base: Base{
-						ID:        uuid.NewV4(),
 						CreatedAt: now,
 						UpdatedAt: now,
 					},
 					BaseBook: BaseBook{
-						AuthorID:    newAuthor.ID,
-						ISBN:        book.ISBN,
-						Title:       book.Title,
 						Description: book.Description,
+						Title:       book.Title,
+						Available:   n,
+						Copies:      n,
 					},
 				}
 
-				MySQL.Create(newAuthor)
-				MySQL.Create(newBook)
+				insertBookRecords = append(insertBookRecords, newBook)
+				insertAuthorRecords = append(insertAuthorRecords, newAuthor)
+				insertBooksAuthorsRecords = append(insertBooksAuthorsRecords, &BooksAuthors{
+					BookISBN: book.ISBN,
+					AuthorID: author.ID,
+				})
 			}
 		}
+	}
+
+	errBulkBooks := gormbulk.BulkInsert(MySQL, insertBookRecords, 3000)
+	if errBulkBooks != nil {
+		log.Println(errBulkBooks.Error())
+		return
+	}
+	errBulkAuthors := gormbulk.BulkInsert(MySQL, insertAuthorRecords, 3000)
+	if errBulkAuthors != nil {
+		log.Println(errBulkAuthors.Error())
+		return
+	}
+	errBulkBooksAuthors := gormbulk.BulkInsert(MySQL, insertBooksAuthorsRecords, 3000)
+	if errBulkBooksAuthors != nil {
+		log.Println(errBulkBooksAuthors.Error())
+		return
 	}
 
 	var allAuthors []Author
@@ -208,68 +270,94 @@ func GetSeedDatabase(w http.ResponseWriter, r *http.Request) {
 // GetAllBooks - Get all books records.
 func GetAllBooks(w http.ResponseWriter, r *http.Request) {
 	var allBooks []Book
-	MySQL.Preload("Author").Find(&allBooks)
-	json.NewEncoder(w).Encode(allBooks)
+	MySQL.Preload("Authors").Find(&allBooks)
+	json.NewEncoder(w).Encode(BooksResponse{
+		Data: allBooks,
+	})
 }
 
 // GetBookByISBN - Retrieve a single book record by it's ISBN (ID).
 func GetBookByISBN(w http.ResponseWriter, r *http.Request) {
 	var book Book
-	query, err := queryBookWithParamID(r)
-	if err != nil {
-		HandleErrorResponse(w, err, http.StatusBadRequest)
-	}
-
-	MySQL.Preload("Author").Where(query).First(&book)
-	json.NewEncoder(w).Encode(book)
-}
-
-// PostNewBook - Create a new book record.
-func PostNewBook(w http.ResponseWriter, r *http.Request) {
-	var book Book
-	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&book)
+	query, err := queryBookWithParamISBN(r)
 	if err != nil {
 		HandleErrorResponse(w, err, http.StatusBadRequest)
 		return
 	}
 
-	// Check the book doesn't already exist
-	var presentBook Book
-	query := &Book{
-		BaseBook: BaseBook{
-			ISBN: book.ISBN,
-		},
+	MySQL.Preload("Authors").Where(query).First(&book)
+	noRecord := book.ISBN == ""
+	if noRecord {
+		json.NewEncoder(w).Encode(&EmptyItemResponse{})
+		return
 	}
 
-	// Handle conflicts
-	MySQL.Where(query).Find(&presentBook)
-	if presentBook.ISBN != "" {
+	json.NewEncoder(w).Encode(BookResponse{
+		Data: book,
+	})
+}
+
+// PostNewBook - Create a new book record.
+func PostNewBook(w http.ResponseWriter, r *http.Request) {
+	var payload PostBookPayload
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&payload)
+	if err != nil {
+		HandleErrorResponse(w, err, http.StatusBadRequest)
+		return
+	}
+
+	// Create new Book object
+	var book Book
+	now := time.Now()
+	book.CreatedAt = now
+	book.UpdatedAt = now
+	book.ISBN = payload.ISBN
+	book.Title = payload.Title
+	book.Copies = payload.Copies
+	book.Available = payload.Available
+	book.Description = payload.Description
+
+	// Check the book doesn't already exist (including "deletes")
+	var presentBook Book
+	query := &Book{ISBN: payload.ISBN}
+	MySQL.Unscoped().Where(query).First(&presentBook)
+	isDeleted := presentBook.DeletedAt != nil
+	if isDeleted {
+		// If it's been soft deleted we can just do a hard delete of
+		//	the duplicate row so we can re-insert with normal flow.
+		MySQL.Unscoped().Where(query).Delete(&Book{})
+	}
+
+	if presentBook.ISBN != "" && !isDeleted {
 		responseErr := errors.New("book with that isbn already exists")
 		HandleErrorResponse(w, responseErr, http.StatusConflict)
 		return
 	}
 
-	// Create new Book
-	now := time.Now()
-	book.CreatedAt = now
-	book.UpdatedAt = now
-	book.ID = uuid.NewV4()
-	MySQL.Create(book)
-
 	// Record book event
+	MySQL.Create(&book)
 	CreateNewBookEvent(book, CREATE)
+
+	// Insert BooksAuthors relations from payload.author_ids.
+	errBulk := BulkInsertBooksAuthors(payload)
+	if errBulk != nil {
+		HandleErrorResponse(w, errBulk, http.StatusBadRequest)
+		return
+	}
 
 	// Return the newly created book in response
 	var newBook Book
-	MySQL.Preload("Author").Where(query).Find(&newBook)
-	json.NewEncoder(w).Encode(newBook)
+	MySQL.Preload("Authors").Where(query).First(&newBook)
+	json.NewEncoder(w).Encode(BookResponse{
+		Data: newBook,
+	})
 }
 
 // PatchUpdateBook - Update a book record by it's ISBN.
 func PatchUpdateBook(w http.ResponseWriter, r *http.Request) {
-	var book Book
-	query, err := queryBookWithParamID(r)
+	var requestBook Book
+	query, err := queryBookWithParamISBN(r)
 	if err != nil {
 		HandleErrorResponse(w, err, http.StatusBadRequest)
 		return
@@ -277,48 +365,59 @@ func PatchUpdateBook(w http.ResponseWriter, r *http.Request) {
 
 	// Parse request body json.
 	decoder := json.NewDecoder(r.Body)
-	errJSON := decoder.Decode(&book)
+	errJSON := decoder.Decode(&requestBook)
 	if errJSON != nil {
 		HandleErrorResponse(w, errJSON, http.StatusBadRequest)
 		return
 	}
 
-	// Update only what's supplied
-	updates := map[string]interface{}{}
-	if book.ISBN != "" {
-		updates["isbn"] = book.ISBN
-	}
-	if book.Title != "" {
-		updates["title"] = book.Title
-	}
-	if book.Description != "" {
-		updates["description"] = book.Description
-	}
-	if book.AuthorID.String() != "" {
-		updates["author_id"] = book.AuthorID.String()
+	var book Book
+	MySQL.Unscoped().Where(query).First(&book)
+	if book.DeletedAt != nil || book.ISBN == "" {
+		msg := fmt.Sprintf("no book with isbn %s found", query.ISBN)
+		err := errors.New(msg)
+		HandleErrorResponse(w, err, http.StatusNotFound)
+		return
 	}
 
-	// Apply updates and record book event
+	// Update only what's supplied
+	updates := map[string]interface{}{}
+	if requestBook.ISBN != "" {
+		updates["isbn"] = requestBook.ISBN
+	}
+
+	if requestBook.Title != "" {
+		updates["title"] = requestBook.Title
+	}
+
+	if requestBook.Description != "" {
+		updates["description"] = requestBook.Description
+	}
+
+	// Apply updates and record requestBook event
 	updates["updated_at"] = time.Now()
-	MySQL.Model(&book).Updates(updates)
+	MySQL.Model(&Book{ISBN: query.ISBN}).Updates(updates)
 	CreateNewBookEvent(book, UPDATE)
 
 	var newBook Book
-	MySQL.Preload("Author").Where(query).Find(&newBook)
-	json.NewEncoder(w).Encode(newBook)
+	MySQL.Preload("Authors").Where(query).First(&newBook)
+	json.NewEncoder(w).Encode(BookResponse{
+		Data: newBook,
+	})
 }
 
 // DeleteBookByISBN - Deletes a book by it's ISBN.
 func DeleteBookByISBN(w http.ResponseWriter, r *http.Request) {
 	var book Book
-	query, err := queryBookWithParamID(r)
+	query, err := queryBookWithParamISBN(r)
 	if err != nil {
 		HandleErrorResponse(w, err, http.StatusBadRequest)
 		return
 	}
 
 	// Delete and record the event
-	MySQL.Where(query).Delete(&book)
+	MySQL.Where(query).First(&book)
+	MySQL.Where(query).Delete(&Book{})
 	CreateNewBookEvent(book, DELETE)
 }
 
@@ -328,8 +427,10 @@ func DeleteBookByISBN(w http.ResponseWriter, r *http.Request) {
 // GetAllAuthors - Retrieve all authors records.
 func GetAllAuthors(w http.ResponseWriter, r *http.Request) {
 	var allAuthors []Author
-	MySQL.Find(&allAuthors)
-	json.NewEncoder(w).Encode(allAuthors)
+	MySQL.Preload("Books").Find(&allAuthors)
+	json.NewEncoder(w).Encode(AuthorsResponse{
+		Data: allAuthors,
+	})
 }
 
 // GetAuthorByID - Retrieve a single author record by it's uuid.
@@ -342,7 +443,14 @@ func GetAuthorByID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	MySQL.Where(query).First(&author)
-	json.NewEncoder(w).Encode(author)
+	if isInvalidAuthor(author) {
+		json.NewEncoder(w).Encode(EmptyItemResponse{})
+		return
+	}
+
+	json.NewEncoder(w).Encode(AuthorResponse{
+		Data: author,
+	})
 }
 
 // PostNewAuthor - Creates a new author record.
@@ -364,7 +472,7 @@ func PostNewAuthor(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Handle conflicts
-	MySQL.Where(query).Find(&presentAuthor)
+	MySQL.Where(query).First(&presentAuthor)
 	if presentAuthor.FirstName != "" {
 		responseErr := errors.New("author with that name already exists")
 		HandleErrorResponse(w, responseErr, http.StatusConflict)
@@ -376,14 +484,17 @@ func PostNewAuthor(w http.ResponseWriter, r *http.Request) {
 	author.CreatedAt = now
 	author.UpdatedAt = now
 	author.ID = uuid.NewV4()
-	MySQL.Create(author)
+	MySQL.Create(&author)
 
 	// Return the newly created author in response
-	json.NewEncoder(w).Encode(author)
+	json.NewEncoder(w).Encode(AuthorResponse{
+		Data: author,
+	})
 }
 
 // PatchUpdateAuthor - Update an author record.
 func PatchUpdateAuthor(w http.ResponseWriter, r *http.Request) {
+	// TODO: Clean this handler up if there's time.
 	a, errQ := queryAuthorWithParamID(r)
 	if errQ != nil {
 		HandleErrorResponse(w, errQ, http.StatusBadRequest)
@@ -396,6 +507,15 @@ func PatchUpdateAuthor(w http.ResponseWriter, r *http.Request) {
 	err := decoder.Decode(&author)
 	if err != nil {
 		HandleErrorResponse(w, err, http.StatusBadRequest)
+		return
+	}
+
+	var currentAuthor Author
+	MySQL.Unscoped().Where(Author{ID: a.ID}).First(&currentAuthor)
+	if currentAuthor.DeletedAt != nil || isInvalidAuthor(currentAuthor) {
+		msg := fmt.Sprintf("no author with id %s found", a.ID)
+		err := errors.New(msg)
+		HandleErrorResponse(w, err, http.StatusNotFound)
 		return
 	}
 
@@ -412,14 +532,12 @@ func PatchUpdateAuthor(w http.ResponseWriter, r *http.Request) {
 	updates["updated_at"] = time.Now()
 	MySQL.Model(&author).Updates(updates)
 
-	var newAuthor Author
-	query := Author{
-		Base: Base{
-			ID: a.ID,
-		},
-	}
-	MySQL.Where(query).First(&newAuthor)
-	json.NewEncoder(w).Encode(newAuthor)
+	var updatedAuthor Author
+	query := Author{ID: author.ID}
+	MySQL.Where(query).First(&updatedAuthor)
+	json.NewEncoder(w).Encode(AuthorResponse{
+		Data: updatedAuthor,
+	})
 }
 
 // DeleteAuthorByID - Deletes an author record by it's uuid.
