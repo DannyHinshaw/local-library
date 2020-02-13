@@ -45,9 +45,8 @@ type Author struct {
 type Book struct {
 	Base
 	BaseBook
+	ISBN    string   `gorm:"index;primary_key;type:char(20);" json:"isbn"`
 	Authors []Author `gorm:"many2many:BooksAuthors;" json:"authors,omitempty"`
-	//Events    []Event  `json:"events,omitempty"`
-	ISBN string `gorm:"index;primary_key;type:char(20);" json:"isbn"`
 }
 
 type Event struct {
