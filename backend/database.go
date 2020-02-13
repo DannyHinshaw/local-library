@@ -10,11 +10,6 @@ import (
 
 var mysqlConnectString = os.Getenv("MYSQL_CONNECT_STRING")
 
-// logTableCreated - Util func to log successful table creations.
-func logTableCreated(s string) {
-	log.Printf("DB:: successfully created '%s' table", s)
-}
-
 // addConstraints - Since GORM annotations are still broken for foreign keys we do it manually here.
 func addConstraints(db *gorm.DB) *gorm.DB {
 	log.Println("adding db table constraints")
@@ -30,8 +25,19 @@ func addConstraints(db *gorm.DB) *gorm.DB {
 		"CASCADE",
 		"CASCADE",
 	)
+	db.Model(&Event{}).AddForeignKey(
+		"isbn",
+		"books(isbn)",
+		"CASCADE",
+		"CASCADE",
+	)
 
 	return db
+}
+
+// logTableCreated - Util func to log successful table creations.
+func logTableCreated(s string) {
+	log.Printf("DB:: successfully created '%s' table", s)
 }
 
 // initTables - Initialize all tables we need if not already present.
@@ -54,6 +60,7 @@ func initTables(db *gorm.DB) *gorm.DB {
 		logTableCreated("books")
 	}
 
+	// If the db is brand new, setup constraints.
 	if !hasAuthors || !hasEvents || !hasBooks {
 		return addConstraints(db)
 	}

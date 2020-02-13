@@ -49,6 +49,10 @@ type BookResponse struct {
 	Data Book `json:"data"`
 }
 
+type EventsResponse struct {
+	Data []Event `json:"data"`
+}
+
 // Common request errors
 var errorBookISBN = errors.New("book isbn missing in request")
 var errorAuthorID = errors.New("author id missing in request")
@@ -297,6 +301,21 @@ func GetBookByISBN(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// GetBookAuthors - Retrieve all authors of a book by it's ISBN.
+func GetBookAuthors(w http.ResponseWriter, r *http.Request) {
+	query, err := queryBookWithParamISBN(r)
+	if err != nil {
+		HandleErrorResponse(w, err, http.StatusBadRequest)
+		return
+	}
+
+	var book Book
+	MySQL.Preload("Authors").Where(query).First(&book)
+	json.NewEncoder(w).Encode(AuthorsResponse{
+		Data: book.Authors,
+	})
+}
+
 // PostNewBook - Create a new book record.
 func PostNewBook(w http.ResponseWriter, r *http.Request) {
 	var payload PostBookPayload
@@ -453,6 +472,21 @@ func GetAuthorByID(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// GetAuthorBooks - Retrieve all books written by an author.
+func GetAuthorBooks(w http.ResponseWriter, r *http.Request) {
+	query, err := queryAuthorWithParamID(r)
+	if err != nil {
+		HandleErrorResponse(w, err, http.StatusBadRequest)
+		return
+	}
+
+	var author Author
+	MySQL.Preload("Books").Where(query).First(&author)
+	json.NewEncoder(w).Encode(BooksResponse{
+		Data: author.Books,
+	})
+}
+
 // PostNewAuthor - Creates a new author record.
 func PostNewAuthor(w http.ResponseWriter, r *http.Request) {
 	var author Author
@@ -550,4 +584,31 @@ func DeleteAuthorByID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	MySQL.Where(query).Delete(&author)
+}
+
+/* 				Events Handlers
+============================================== */
+
+// GetAllEvents - Retrieve all events from the events table..
+func GetAllEvents(w http.ResponseWriter, r *http.Request) {
+	var allEvents []Event
+	MySQL.Model(&Event{}).Find(&allEvents)
+	json.NewEncoder(w).Encode(EventsResponse{
+		Data: allEvents,
+	})
+}
+
+// GetEventsByISBN - Retrieve all events for a book by it's ISBN.
+func GetEventsByISBN(w http.ResponseWriter, r *http.Request) {
+	query, err := queryBookWithParamISBN(r)
+	if err != nil {
+		HandleErrorResponse(w, err, http.StatusBadRequest)
+		return
+	}
+
+	var allEvents []Event
+	MySQL.Model(&Event{ISBN: query.ISBN}).Find(&allEvents)
+	json.NewEncoder(w).Encode(EventsResponse{
+		Data: allEvents,
+	})
 }

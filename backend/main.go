@@ -16,7 +16,7 @@ func registerRoutes() *mux.Router {
 	// Base router/routes
 	router := mux.NewRouter()
 
-	// Register middlewares
+	// Register middleware
 	router.Use(RouteLogger)
 
 	// Util handlers
@@ -38,6 +38,9 @@ func registerRoutes() *mux.Router {
 		HandleFunc("/authors/{id}", GetAuthorByID).
 		Methods("GET")
 	router.
+		HandleFunc("/authors/{id}/books", GetAuthorBooks).
+		Methods("GET")
+	router.
 		HandleFunc("/authors/{id}", PatchUpdateAuthor).
 		Methods("PATCH")
 	router.
@@ -55,11 +58,22 @@ func registerRoutes() *mux.Router {
 		HandleFunc("/books/{isbn}", GetBookByISBN).
 		Methods("GET")
 	router.
+		HandleFunc("/books/{isbn}/authors", GetBookAuthors).
+		Methods("GET")
+	router.
 		HandleFunc("/books/{isbn}", PatchUpdateBook).
 		Methods("PATCH")
 	router.
 		HandleFunc("/books/{isbn}", DeleteBookByISBN).
 		Methods("DELETE")
+
+	// Events
+	router.
+		HandleFunc("/events/books/{isbn}", GetEventsByISBN).
+		Methods("GET")
+	router.
+		HandleFunc("/events", GetAllEvents).
+		Methods("GET")
 
 	return router
 }
