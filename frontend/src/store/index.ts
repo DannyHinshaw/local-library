@@ -5,11 +5,12 @@ import { persistReducer, persistStore } from "redux-persist";
 import { PersistConfig } from "redux-persist/es/types";
 import storageSession from "redux-persist/lib/storage";
 import reduxThunk from "redux-thunk";
-import exampleReducer from "./reducers/exampleReducer";
+import authorsReducer from "./reducers/authorsReducer";
+import booksReducer from "./reducers/booksReducer";
 
 
 // Persist store to session storage for refresh
-const persistConfig: PersistConfig = {
+const persistConfig: PersistConfig<any> = {
 	key: "root",
 	storage: storageSession,
 	blacklist: []
@@ -21,7 +22,8 @@ const persistConfig: PersistConfig = {
  * @type {Reducer<any>}
  */
 const rootReducer: Reducer = combineReducers({
-	example: exampleReducer
+	authors: authorsReducer,
+	books: booksReducer
 });
 
 // Create store with reducers, initial state and any middleware.

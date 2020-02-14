@@ -16,9 +16,6 @@ func registerRoutes() *mux.Router {
 	// Base router/routes
 	router := mux.NewRouter()
 
-	// Register middleware
-	router.Use(RouteLogger)
-
 	// Util handlers
 	router.
 		HandleFunc("/health", GetHealthCheckHandler).
