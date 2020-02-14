@@ -28,7 +28,7 @@ jobs:
       - name: Run ESLint
         working-directory: ./frontend
         run: |
-          npm install -g npx
+          sudo npm install -g npx
           npx eslint --quiet src --ext .js,.jsx,.ts,.tsx --ignore-pattern serviceWorker.ts
 
       # Set status
