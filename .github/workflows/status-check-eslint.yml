@@ -27,7 +27,7 @@ jobs:
 
       - name: Run ESLint
         working-directory: ./frontend
-        run: npx eslint --quiet src --ext .js,.jsx,.ts,.tsx --ignore-pattern serviceWorker.ts
+        run: yarn && yarn lint
 
       # Set status
       - if: success()
