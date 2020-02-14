@@ -21,8 +21,8 @@ jobs:
         working-directory: .github/workflows
         run: |
           ls -al
-          chmod +x node-install
-          chmod +x yarn-install
+          chmod +x node-install.sh
+          chmod +x yarn-install.sh
           ./node-install.sh
           ./yarn-install.sh
 
