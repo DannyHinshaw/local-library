@@ -26,9 +26,9 @@ jobs:
           ./node-install.sh
           ./yarn-install.sh
 
-      - name: Build Project
+      - name: Install Packages & Build Project
         working-directory: ./frontend
-        run: yarn build
+        run: yarn && yarn build
 
       # Set status
       - if: success()
