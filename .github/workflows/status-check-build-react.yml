@@ -20,6 +20,7 @@ jobs:
       - name: Install NodeJS & Yarn
         working-directory: .github/workflows
         run: |
+          ls -al
           chmod +x node-install
           chmod +x yarn-install
           ./node-install.sh
