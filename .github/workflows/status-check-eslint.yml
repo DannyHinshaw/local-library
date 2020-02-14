@@ -20,7 +20,7 @@ jobs:
       - name: Run ESLint
         working-directory: ./frontend
         run: |
-          yarn global add npx
+          npm install -g npx
           npx eslint --quiet src --ext .js,.jsx,.ts,.tsx --ignore-pattern serviceWorker.ts
 
       # Set status
