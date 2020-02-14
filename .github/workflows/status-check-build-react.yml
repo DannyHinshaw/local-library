@@ -1,0 +1,44 @@
+name: React Build Status Check
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v1
+
+      - uses: ouzi-dev/commit-status-updater@v0.1.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Run `yarn install` command
+      - name: Install Packages
+        uses: borales/actions-yarn@v2.0.0
+        with:
+          cmd: install
+
+      # Run `yarn build` command
+      - name: Build Project
+        uses: borales/actions-yarn@v2.0.0
+        with:
+          cmd: build
+
+      # Set status
+      - if: success()
+        uses: ouzi-dev/commit-status-updater@v0.1.1
+        with:
+          state: success
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - if: failure()
+        uses: ouzi-dev/commit-status-updater@v0.1.1
+        with:
+          state: failure
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
