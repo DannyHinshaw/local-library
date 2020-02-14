@@ -1,9 +1,12 @@
-import React from 'react';
-import { render } from '@testing-library/react';
-import App from './App';
+import { render } from "@testing-library/react";
+import React from "react";
+import App from "./App";
 
-test('renders learn react link', () => {
-  const { getByText } = render(<App />);
-  const linkElement = getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+// eslint-disable-next-line no-undef
+test("renders learn react link", () => {
+	const { getByText } = render(<App />);
+	const linkElement = getByText(/learn react/i);
+
+	// eslint-disable-next-line no-undef
+	expect(linkElement).toBeInTheDocument();
 });
