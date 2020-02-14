@@ -1,11 +1,18 @@
 import React, { ComponentType } from "react";
 import "./App.css";
-import NavMenu from "./components/NavMenu";
+import Header from "./components/Header";
+import Main from "./containers/Main";
 
+/**
+ * Main Application.
+ * @returns {JSX.Element}
+ * @constructor
+ */
 const App: ComponentType = (): JSX.Element => {
 	return (
 		<>
-			<NavMenu />
+			<Header />
+			<Main />
 		</>
 	);
 };

@@ -1,0 +1,15 @@
+header {
+  background-color: #17243a;
+  color: azure;
+  display: flex;
+  justify-content: space-between;
+  padding: 1rem;
+
+  .left-group {
+    display: flex;
+
+    svg {
+      padding: 0 .5rem;
+    }
+  }
+}

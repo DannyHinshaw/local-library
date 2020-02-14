@@ -1,3 +1,5 @@
+import { Dispatch, SetStateAction } from "react";
+
 export interface IBase {
 	created_at: string
 	updated_at: string
@@ -19,3 +21,5 @@ export interface IBook extends IBase {
 	title: string
 	isbn: string
 }
+
+export type StateSetter<T> = Dispatch<SetStateAction<T>>;

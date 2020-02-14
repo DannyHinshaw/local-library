@@ -28,6 +28,7 @@ type BaseBook struct {
 	Available   int    `json:"available"`
 	Copies      int    `json:"copies"`
 	Title       string `json:"title"`
+	Image       string `json:"image"`
 }
 
 /* 			Tables
@@ -73,12 +74,7 @@ func CreateNewBookEvent(book Book, eventType BookEventType) {
 	event := Event{
 		ISBN:      book.ISBN,
 		EventType: eventType,
-		BaseBook: BaseBook{
-			Description: book.Description,
-			Available:   book.Available,
-			Copies:      book.Copies,
-			Title:       book.Title,
-		},
+		BaseBook:  book.BaseBook,
 	}
 
 	MySQL.Create(&event)
