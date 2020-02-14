@@ -27,7 +27,9 @@ jobs:
 
       - name: Run ESLint
         working-directory: ./frontend
-        run: yarn add npx && yarn lint
+        run: |
+          yarn global add npx
+          npx eslint --quiet src --ext .js,.jsx,.ts,.tsx --ignore-pattern serviceWorker.ts
 
       # Set status
       - if: success()
