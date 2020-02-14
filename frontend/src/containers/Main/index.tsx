@@ -17,7 +17,7 @@ const Main: ComponentType = (): JSX.Element => {
 	return (
 		<main>
 			<ControlButtons setView={setView} view={view} />
-			<CardsView />
+			<CardsView view={view} />
 		</main>
 	);
 };

@@ -10,35 +10,35 @@
     "isbn": "9780134190440",
     "image": "https://www.informit.com/store/go-programming-language-9780134190440",
     "title": "Go Programming Language, The (Addison-Wesley Professional Computing Series) 1st Edition\n",
-    "author": "ae432d8a-bffa-4a6b-9a5a-191jk3f38008",
+    "author": "ca0d07bf-1a12-4742-989b-cdaa4c05ad72",
     "description": "The Go Programming Language is the authoritative resource for any programmer who wants to learn Go. It shows how to write clear and idiomatic Go to solve real-world problems. The book does not assume prior knowledge of Go nor experience with any specific language, so you’ll find it accessible whether you’re most comfortable with JavaScript, Ruby, Python, Java, or C++."
   },
   {
     "isbn": "978-1478355823",
     "image": "https://www.golang-book.com/public/img/intro/cover.4194045234.png",
     "title": " An Introduction to Programming in Go",
-    "author": "ui45dd8a-bffa-4a6b-9a5a-191jk3f38008",
+    "author": "da0d07bf-1a12-4742-989b-cdaa4c05ad72",
     "description": "This book is a short, concise introduction to computer programming using the language Go. Designed by Google, Go is a general purpose programming language with modern features, clean syntax and a robust well-documented common library, making it an ideal language to learn as your first programming language."
   },
   {
     "isbn": "1491941197",
     "image": "https://covers.oreillystatic.com/images/0636920046189/cat.gif",
     "title": "Concurrency in Go: Tools and Techniques for Developers",
-    "author": "ke45cc9a-bffa-4a6b-9a5a-191jk3f38008",
+    "author": "ea0d07bf-1a12-4742-989b-cdaa4c05ad72",
     "description": "Concurrency can be notoriously difficult to get right, but fortunately, the Go open source programming language makes working with concurrency tractable and even easy. If you’re a developer familiar with Go, this practical book demonstrates best practices and patterns to help you incorporate concurrency into your systems."
   },
   {
     "isbn": "9781617292569",
     "image": "https://images-na.ssl-images-amazon.com/images/I/4181FasH-KL._SX399_BO1,204,203,200_.jpg",
     "title": "Go Web Programming",
-    "author": "pe39cc9a-bffa-4a6b-9a5a-191jk3f38008",
+    "author": "fa0d07bf-1a12-4742-989b-cdaa4c05ad72",
     "description": "Go Web Programming teaches you how to build scalable, high-performance web applications in Go using modern design principles."
   },
   {
     "isbn": "1633430073",
     "image": "https://images-na.ssl-images-amazon.com/images/I/41oiM9rSONL._SX397_BO1,204,203,200_.jpg",
     "title": "Go in Practice",
-    "author": "qp54dd9a-bffa-4a6b-9a5a-191jk3f38008",
+    "author": "ff0d07bf-1a12-4742-989b-cdaa4c05ad72",
     "description": "Go in Practice guides you through 70 real-world techniques in key areas like package management, microservice communication, and more. Following a cookbook-style Problem/Solution/Discussion format, this practical handbook builds on the foundational concepts of the Go language and introduces specific strategies you can use in your day-to-day applications."
   },
   {

@@ -24,7 +24,7 @@ export interface IBooksAction extends IActionBase {
 /*      Authors
  ======================= */
 
-export const exampleSet = (payload: AuthorsState): IAuthorsAction =>
+export const authorsSet = (payload: AuthorsState): IAuthorsAction =>
 	action(actionTypes.AUTHORS_SET, payload);
 
 /*      Books
