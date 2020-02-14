@@ -1,4 +1,6 @@
 ![Golang Build Status Check](https://github.com/DannyHinshaw/local-library/workflows/Golang%20Build%20Status%20Check/badge.svg)
+![ESLint Status Check](https://github.com/DannyHinshaw/local-library/workflows/ESLint%20Status%20Check/badge.svg)
+![React Build Status Check](https://github.com/DannyHinshaw/local-library/workflows/React%20Build%20Status%20Check/badge.svg)
 
 # local-library
 
