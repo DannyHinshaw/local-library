@@ -333,6 +333,7 @@ func PostNewBook(w http.ResponseWriter, r *http.Request) {
 	book.UpdatedAt = now
 	book.ISBN = payload.ISBN
 	book.Title = payload.Title
+	book.Image = payload.Image
 	book.Copies = payload.Copies
 	book.Available = payload.Available
 	book.Description = payload.Description
@@ -403,6 +404,10 @@ func PatchUpdateBook(w http.ResponseWriter, r *http.Request) {
 	updates := map[string]interface{}{}
 	if requestBook.ISBN != "" {
 		updates["isbn"] = requestBook.ISBN
+	}
+
+	if requestBook.Image != "" {
+		updates["image"] = requestBook.Image
 	}
 
 	if requestBook.Title != "" {

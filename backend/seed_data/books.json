@@ -1,48 +1,91 @@
 [
   {
     "isbn": "9781593275846",
+    "image": "https://eloquentjavascript.net/2nd_edition/img/cover.png",
     "title": "Eloquent JavaScript, Second Edition",
     "author": "ba0d07bf-1a12-4742-989b-cdaa4c05ad72",
     "description": "JavaScript lies at the heart of almost every modern web application, from social apps to the newest browser-based games. Though simple for beginners to pick up and play with, JavaScript is a flexible, complex language that you can use to build full-scale applications."
   },
   {
+    "isbn": "9780134190440",
+    "image": "https://www.informit.com/store/go-programming-language-9780134190440",
+    "title": "Go Programming Language, The (Addison-Wesley Professional Computing Series) 1st Edition\n",
+    "author": "ca0d07bf-1a12-4742-989b-cdaa4c05ad72",
+    "description": "The Go Programming Language is the authoritative resource for any programmer who wants to learn Go. It shows how to write clear and idiomatic Go to solve real-world problems. The book does not assume prior knowledge of Go nor experience with any specific language, so you’ll find it accessible whether you’re most comfortable with JavaScript, Ruby, Python, Java, or C++."
+  },
+  {
+    "isbn": "978-1478355823",
+    "image": "https://www.golang-book.com/public/img/intro/cover.4194045234.png",
+    "title": " An Introduction to Programming in Go",
+    "author": "da0d07bf-1a12-4742-989b-cdaa4c05ad72",
+    "description": "This book is a short, concise introduction to computer programming using the language Go. Designed by Google, Go is a general purpose programming language with modern features, clean syntax and a robust well-documented common library, making it an ideal language to learn as your first programming language."
+  },
+  {
+    "isbn": "1491941197",
+    "image": "https://covers.oreillystatic.com/images/0636920046189/cat.gif",
+    "title": "Concurrency in Go: Tools and Techniques for Developers",
+    "author": "ea0d07bf-1a12-4742-989b-cdaa4c05ad72",
+    "description": "Concurrency can be notoriously difficult to get right, but fortunately, the Go open source programming language makes working with concurrency tractable and even easy. If you’re a developer familiar with Go, this practical book demonstrates best practices and patterns to help you incorporate concurrency into your systems."
+  },
+  {
+    "isbn": "9781617292569",
+    "image": "https://images-na.ssl-images-amazon.com/images/I/4181FasH-KL._SX399_BO1,204,203,200_.jpg",
+    "title": "Go Web Programming",
+    "author": "fa0d07bf-1a12-4742-989b-cdaa4c05ad72",
+    "description": "Go Web Programming teaches you how to build scalable, high-performance web applications in Go using modern design principles."
+  },
+  {
+    "isbn": "1633430073",
+    "image": "https://images-na.ssl-images-amazon.com/images/I/41oiM9rSONL._SX397_BO1,204,203,200_.jpg",
+    "title": "Go in Practice",
+    "author": "ff0d07bf-1a12-4742-989b-cdaa4c05ad72",
+    "description": "Go in Practice guides you through 70 real-world techniques in key areas like package management, microservice communication, and more. Following a cookbook-style Problem/Solution/Discussion format, this practical handbook builds on the foundational concepts of the Go language and introduces specific strategies you can use in your day-to-day applications."
+  },
+  {
     "isbn": "9781449331818",
+    "image": "https://addyosmani.com/resources/essentialjsdesignpatterns/cover/cover.jpg",
     "title": "Learning JavaScript Design Patterns",
     "author": "fd6cccf3-d8bd-45d4-98dc-d69f7f51b907",
     "description": "With Learning JavaScript Design Patterns, you'll learn how to write beautiful, structured, and maintainable JavaScript by applying classical and modern design patterns to the language. If you want to keep your code efficient, more manageable, and up-to-date with the latest best practices, this book is for you."
   },
   {
     "isbn": "9781449365035",
+    "image": "",
     "title": "Speaking JavaScript",
     "author": "5df4f216-90a2-4d42-b0ef-583ac39df548",
     "description": "Like it or not, JavaScript is everywhere these days-from browser to server to mobile-and now you, too, need to learn the language or dive deeper than you have. This concise book guides you into and through JavaScript, written by a veteran programmer who once found himself in the same position."
   },
   {
     "isbn": "9781491950296",
+    "image": "https://images-na.ssl-images-amazon.com/images/I/512Hli3f6FL._SX379_BO1,204,203,200_.jpg",
     "title": "Programming JavaScript Applications",
     "author": "5fefd7f0-120a-4ea7-9de7-d4b56d105ee1",
     "description": "Take advantage of JavaScript's power to build robust web-scale or enterprise applications that are easy to extend and maintain. By applying the design patterns outlined in this practical book, experienced JavaScript developers will learn how to write flexible and resilient code that's easier-yes, easier-to work with as your code base grows."
   },
   {
     "isbn": "9781593277574",
+    "image": "https://images-na.ssl-images-amazon.com/images/I/512T%2Bd%2BVK6L._SX376_BO1,204,203,200_.jpg",
     "title": "Understanding ECMAScript 6",
     "author": "87f3bf66-e93b-4662-aa0a-7868281b6e11",
     "description": "ECMAScript 6 represents the biggest update to the core of JavaScript in the history of the language. In Understanding ECMAScript 6, expert developer Nicholas C. Zakas provides a complete guide to the object types, syntax, and other exciting changes that ECMAScript 6 brings to JavaScript."
   },
   {
     "isbn": "9781491904244",
+    "image": "https://images-na.ssl-images-amazon.com/images/I/B14vD2o4sDS._SY300_.png",
     "title": "You Don't Know JS",
     "author": "c7f6e1b8-9e42-4666-bba8-dd9b229a362e",
     "description": "No matter how much experience you have with JavaScript, odds are you don’t fully understand the language. As part of the \"You Don’t Know JS\" series, this compact guide focuses on new features available in ECMAScript 6 (ES6), the latest version of the standard upon which JavaScript is built."
   },
   {
     "isbn": "9781449325862",
+    "image": "https://images-na.ssl-images-amazon.com/images/I/41d3vhhpkbL.jpg",
     "title": "Git Pocket Guide",
     "author": "e6fc69f9-f571-4706-9f06-82e357a57263",
     "description": "This pocket guide is the perfect on-the-job companion to Git, the distributed version control system. It provides a compact, readable introduction to Git for new users, as well as a reference to common commands and procedures for those of you with Git experience."
   },
   {
     "isbn": "9781449337711",
+    "image": "",
     "title": "Designing Evolvable Web APIs with ASP.NET",
     "author": "ae432d8a-bffa-4a6b-9a5a-191b09f38008",
     "description": "Design and build Web APIs for a broad range of clients—including browsers and mobile devices—that can adapt to change over time. This practical, hands-on guide takes you through the theory and tools you need to build evolvable HTTP services with Microsoft’s ASP.NET Web API framework. In the process, you’ll learn how design and implement a real-world Web API."
