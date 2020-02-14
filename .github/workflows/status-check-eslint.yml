@@ -7,6 +7,7 @@ on:
       - reopened
 
 jobs:
+  working-directory: ./frontend
   build:
     runs-on: ubuntu-latest
     steps:
@@ -20,14 +21,12 @@ jobs:
       # Add NPX
       - name: Add NPX
         uses: borales/actions-yarn@v2.0.0
-        working-directory: ./frontend
         with:
           cmd: add npx
 
       # Run `yarn lint` command
       - name: Run ESLint
         uses: borales/actions-yarn@v2.0.0
-        working-directory: ./frontend
         with:
           cmd: lint
 
