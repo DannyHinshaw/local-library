@@ -7,7 +7,6 @@ on:
       - reopened
 
 jobs:
-  working-directory: ./frontend
   build:
     runs-on: ubuntu-latest
     steps:
@@ -18,17 +17,17 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # Add NPX
-      - name: Add NPX
-        uses: borales/actions-yarn@v2.0.0
-        with:
-          cmd: add npx
+      - name: Install NodeJS & Yarn
+        working-directory: .github/workflows
+        run: |
+          chmod +x node-install
+          chmod +x yarn-install
+          ./node-install.sh
+          ./yarn-install.sh
 
-      # Run `yarn lint` command
       - name: Run ESLint
-        uses: borales/actions-yarn@v2.0.0
-        with:
-          cmd: lint
+        working-directory: ./frontend
+        run: yarn add npx && yarn lint
 
       # Set status
       - if: success()

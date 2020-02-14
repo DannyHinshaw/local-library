@@ -7,7 +7,6 @@ on:
       - reopened
 
 jobs:
-  working-directory: ./frontend
   build:
     runs-on: ubuntu-latest
     steps:
@@ -18,17 +17,17 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # Run `yarn install` command
-      - name: Install Packages
-        uses: borales/actions-yarn@v2.0.0
-        with:
-          cmd: install
+      - name: Install NodeJS & Yarn
+        working-directory: .github/workflows
+        run: |
+          chmod +x node-install
+          chmod +x yarn-install
+          ./node-install.sh
+          ./yarn-install.sh
 
-      # Run `yarn build` command
       - name: Build Project
-        uses: borales/actions-yarn@v2.0.0
-        with:
-          cmd: build
+        working-directory: ./frontend
+        run: yarn build
 
       # Set status
       - if: success()
