@@ -1,4 +1,4 @@
-package main
+package db
 
 import (
 	"github.com/jinzhu/gorm"
@@ -13,15 +13,27 @@ var mysqlConnectString = os.Getenv("MYSQL_CONNECT_STRING")
 // addConstraints - Since GORM annotations are still broken for foreign keys we do it manually here.
 func addConstraints(db *gorm.DB) *gorm.DB {
 	log.Println("adding db table constraints")
-	db.Table("BooksAuthors").AddForeignKey(
+	db.Table("books_authors").AddForeignKey(
 		"book_isbn",
 		"books(isbn)",
 		"CASCADE",
 		"CASCADE",
 	)
-	db.Table("BooksAuthors").AddForeignKey(
+	db.Table("books_authors").AddForeignKey(
 		"author_id",
 		"authors(id)",
+		"CASCADE",
+		"CASCADE",
+	)
+	db.Model(&Book{}).AddForeignKey(
+		"isbn",
+		"copies(isbn)",
+		"CASCADE",
+		"CASCADE",
+	)
+	db.Model(&Checkout{}).AddForeignKey(
+		"member_id",
+		"members(id)",
 		"CASCADE",
 		"CASCADE",
 	)
@@ -42,10 +54,22 @@ func logTableCreated(s string) {
 
 // initTables - Initialize all tables we need if not already present.
 func initTables(db *gorm.DB) *gorm.DB {
+	hasCheckout := db.HasTable(&Checkout{})
+	if !hasCheckout {
+		db.CreateTable(Checkout{})
+		logTableCreated("checkouts")
+	}
+
 	hasAuthors := db.HasTable(&Author{})
 	if !hasAuthors {
 		db.CreateTable(Author{})
 		logTableCreated("authors")
+	}
+
+	hasMembers := db.HasTable(&Member{})
+	if !hasMembers {
+		db.CreateTable(Member{})
+		logTableCreated("members")
 	}
 
 	hasEvents := db.HasTable(&Event{})
@@ -60,6 +84,12 @@ func initTables(db *gorm.DB) *gorm.DB {
 		logTableCreated("books")
 	}
 
+	hasCopies := db.HasTable(&Copy{})
+	if !hasCopies {
+		db.CreateTable(Copy{})
+		logTableCreated("copies")
+	}
+
 	// If the db is brand new, setup constraints.
 	if !hasAuthors || !hasEvents || !hasBooks {
 		return addConstraints(db)
@@ -68,7 +98,7 @@ func initTables(db *gorm.DB) *gorm.DB {
 	return db
 }
 
-// getClient - Util function to create mysql gorm client (deferred Close() in root/main.go).
+// getClient - Util function to create mysql gorm client (deferred Close() in root/db.go).
 func getClient() *gorm.DB {
 	interval := time.Duration(5) * time.Second
 	retries := 10

@@ -4,6 +4,8 @@ import (
 	"context"
 	"github.com/gorilla/mux"
 	"log"
+	"main/db"
+	"main/handlers"
 	"net/http"
 	"os"
 	"os/signal"
@@ -18,58 +20,72 @@ func registerRoutes() *mux.Router {
 
 	// Util handlers
 	router.
-		HandleFunc("/health", GetHealthCheckHandler).
+		HandleFunc("/health", handlers.GetHealthCheckHandler).
 		Methods("GET")
 	router.
-		HandleFunc("/seed", GetSeedDatabase).
+		HandleFunc("/seed", handlers.GetSeedDatabase).
 		Methods("GET")
 
 	// Authors
 	router.
-		HandleFunc("/authors", PostNewAuthor).
+		HandleFunc("/authors", handlers.PostNewAuthor).
 		Methods("POST")
 	router.
-		HandleFunc("/authors", GetAllAuthors).
+		HandleFunc("/authors", handlers.GetAllAuthors).
 		Methods("GET")
 	router.
-		HandleFunc("/authors/{id}", GetAuthorByID).
+		HandleFunc("/authors/{id}", handlers.GetAuthorByID).
 		Methods("GET")
 	router.
-		HandleFunc("/authors/{id}/books", GetAuthorBooks).
+		HandleFunc("/authors/{id}/books", handlers.GetAuthorBooks).
 		Methods("GET")
 	router.
-		HandleFunc("/authors/{id}", PatchUpdateAuthor).
+		HandleFunc("/authors/{id}", handlers.PatchUpdateAuthor).
 		Methods("PATCH")
 	router.
-		HandleFunc("/authors/{id}", DeleteAuthorByID).
+		HandleFunc("/authors/{id}", handlers.DeleteAuthorByID).
 		Methods("DELETE")
 
 	// Books
 	router.
-		HandleFunc("/books", PostNewBook).
+		HandleFunc("/books", handlers.PostNewBook).
 		Methods("POST")
 	router.
-		HandleFunc("/books", GetAllBooks).
+		HandleFunc("/books", handlers.GetAllBooks).
 		Methods("GET")
 	router.
-		HandleFunc("/books/{isbn}", GetBookByISBN).
+		HandleFunc("/books/{isbn}", handlers.GetBookByISBN).
 		Methods("GET")
 	router.
-		HandleFunc("/books/{isbn}/authors", GetBookAuthors).
+		HandleFunc("/books/{isbn}/authors", handlers.GetBookAuthors).
 		Methods("GET")
 	router.
-		HandleFunc("/books/{isbn}", PatchUpdateBook).
+		HandleFunc("/books/{isbn}", handlers.PatchUpdateBook).
 		Methods("PATCH")
 	router.
-		HandleFunc("/books/{isbn}", DeleteBookByISBN).
+		HandleFunc("/books/{isbn}", handlers.DeleteBookByISBN).
 		Methods("DELETE")
 
 	// Events
 	router.
-		HandleFunc("/events/books/{isbn}", GetEventsByISBN).
+		HandleFunc("/events/books/{isbn}", handlers.GetEventsByBookID).
 		Methods("GET")
 	router.
-		HandleFunc("/events", GetAllEvents).
+		HandleFunc("/events", handlers.GetAllEvents).
+		Methods("GET")
+
+	// Checkouts
+	router.
+		HandleFunc("/checkouts", handlers.PostNewCheckout).
+		Methods("POST")
+	router.
+		HandleFunc("/checkouts", handlers.GetAllCheckouts).
+		Methods("GET")
+	router.
+		HandleFunc("/checkouts/{book_id}", handlers.PatchUpdateCheckout).
+		Methods("PATCH")
+	router.
+		HandleFunc("/checkouts/{member_id}", handlers.GetCheckoutsByMemberID).
 		Methods("GET")
 
 	return router
@@ -104,7 +120,7 @@ func main() {
 	signal.Notify(c, os.Interrupt)
 
 	// Close database connection gracefully
-	defer MySQL.Close()
+	defer db.MySQL.Close()
 
 	// Block until we receive our signal.
 	<-c
