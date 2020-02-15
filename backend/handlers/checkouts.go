@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"github.com/gorilla/mux"
 	uuid "github.com/satori/go.uuid"
 	"main/db"
@@ -17,26 +18,38 @@ type CheckoutResponse struct {
 	Data db.Checkout `json:"data"`
 }
 
+// Common request errors
+var errorBookID = errors.New("book id missing in request")
+
 // queryCheckoutWithParamBookID - Build gorm book query with id from url params.
-func queryCheckoutWithParamBookID(r *http.Request) (*db.Checkout, error) {
+func queryCheckoutWithParams(r *http.Request) (*db.Checkout, error) {
 	params := mux.Vars(r)
-	bookId := params["book_id"]
-	if bookId == "" {
-		return nil, errorBookISBN
+	bookID := params["book_id"]
+	if bookID == "" {
+		return nil, errorBookID
 	}
 
-	id := StringToUInt(bookId)
-	query := &db.Checkout{BookID: id}
+	memberID := params["memberID"]
+	if memberID == "" {
+		return nil, errorMemberID
+	}
+
+	mID := uuid.FromStringOrNil(memberID)
+	bID := StringToUInt(bookID)
+	query := &db.Checkout{
+		MemberID: mID,
+		BookID:   bID,
+	}
 
 	return query, nil
 }
 
-// queryCheckoutWithParamBookID - Build gorm book query with id from url params.
+// queryCheckoutWithParamMemberID - Build gorm book query with id from url params.
 func queryCheckoutWithParamMemberID(r *http.Request) (*db.Checkout, error) {
 	params := mux.Vars(r)
 	memberId := params["member_id"]
 	if memberId == "" {
-		return nil, errorBookISBN
+		return nil, errorMemberID
 	}
 
 	query := &db.Checkout{
@@ -87,38 +100,18 @@ func PostNewCheckout(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// PatchUpdateCheckout - Updates a checked out item.
+// PatchUpdateCheckout - Update to return a checked out item.
 func PatchUpdateCheckout(w http.ResponseWriter, r *http.Request) {
-	var requestCheckout db.Checkout
-	query, err := queryCheckoutWithParamBookID(r)
+	query, err := queryCheckoutWithParams(r)
 	if err != nil {
 		HandleErrorResponse(w, err, http.StatusBadRequest)
 		return
 	}
 
-	// Parse request body json.
-	decoder := json.NewDecoder(r.Body)
-	errJSON := decoder.Decode(&requestCheckout)
-	if errJSON != nil {
-		HandleErrorResponse(w, errJSON, http.StatusBadRequest)
-		return
-	}
-
-	// Update only what's supplied
-	updates := map[string]interface{}{}
-	if requestCheckout.Returned != nil {
-		updates["returned"] = time.Now()
-	}
-
-	checkoutQuery := &db.Checkout{
-		MemberID: requestCheckout.MemberID,
-		BookID:   query.BookID,
-	}
-
-	var newCheckout db.Checkout
-	db.MySQL.Model(checkoutQuery).Updates(updates)
-	db.MySQL.Model(checkoutQuery).First(&newCheckout)
+	var checkout db.Checkout
+	db.MySQL.Model(query).Update("returned", time.Now())
+	db.MySQL.Model(query).First(&checkout)
 	json.NewEncoder(w).Encode(CheckoutResponse{
-		Data: newCheckout,
+		Data: checkout,
 	})
 }
