@@ -1,6 +1,7 @@
 import { Dispatch, SetStateAction } from "react";
 
 export type StateSetter<T> = Dispatch<SetStateAction<T>>;
+export type OrNull<T> = T | null;
 
 export enum BookEventType {
 	CREATE = "CREATE",

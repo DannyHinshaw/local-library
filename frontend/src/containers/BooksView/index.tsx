@@ -1,11 +1,13 @@
-import React, { ComponentType, useEffect } from "react";
+import React, { ComponentType, useEffect, useState } from "react";
 import Masonry from "react-masonry-css";
 import { connect } from "react-redux";
 import { api } from "../../api";
 import BookCard from "../../components/BookCard";
-import { booksSet } from "../../store/actions";
+import LoaderCircle from "../../components/LoaderCircle";
+import { booksSet, checkoutsSet } from "../../store/actions";
 import { BookState } from "../../store/reducers/booksReducer";
-import { IBook } from "../../types";
+import { CheckoutsState } from "../../store/reducers/checkoutsReducer";
+import { IBook, OrNull } from "../../types";
 import "./styles.scss";
 
 
@@ -17,7 +19,9 @@ const breakpointColumnsObj = {
 };
 
 export interface IBooksView {
+	checkoutsSet: typeof checkoutsSet
 	booksSet: typeof booksSet
+	checkouts: CheckoutsState
 	books: BookState
 }
 
@@ -28,29 +32,56 @@ export interface IBooksView {
  * @constructor
  */
 const BooksView: ComponentType<IBooksView> = (props: IBooksView): JSX.Element => {
+	const [loading, setLoading] = useState(true);
+	const stopLoader = () => setLoading(false);
+
+	const handleCheckoutData = (data: any[]) => {
+		const checkouts = data as CheckoutsState;
+		return props.checkoutsSet(checkouts);
+	};
 
 	const handleBookData = (data: any[]) => {
 		const books = data as BookState;
-		props.booksSet(books);
+		return props.booksSet(books);
 	};
 
+	// Retrieve and store checkouts.
+	const fetchCheckouts = () => api.getAllCheckouts().then((res): OrNull<any> => {
+		return res.data.length
+			? handleCheckoutData(res.data)
+			: null;
+	});
+
+	// Retrieve and store books.
+	const fetchBooks = () => api.getAllBooks().then((res): OrNull<any> => {
+		return res.data.length
+			? handleBookData(res.data)
+			: null;
+	});
+
 	useEffect(() => {
-		api.getAllBooks().then(res => {
-			if (res.data.length) {
-				return handleBookData(res.data);
-			}
+		if (!props.books.length && !props.checkouts.length) {
+			Promise.all([fetchBooks(), fetchCheckouts()]).then((hasData) => {
 
-			// Seed the database if there's no test data yet.
-			api.getSeedDatabase()
-				.then(console.log)
-				.catch(console.error);
+				// Seed the database if there's no test data yet.
+				if (!hasData[0]) {
+					return api.getSeedDatabase()
+						.then(console.log)
+						.then(stopLoader)
+						.catch(console.error);
+				}
 
-			console.log("res::", res);
-		}).catch(console.error);
+				return stopLoader();
+			}).catch(console.error);
+		} else {
+			stopLoader();
+		}
 	}, []);
 
-	return (
-		<Masonry
+
+	return loading
+		? <LoaderCircle size={100} />
+		: <Masonry
 			className="my-masonry-grid"
 			breakpointCols={breakpointColumnsObj}
 			columnClassName="my-masonry-grid_column">
@@ -59,11 +90,11 @@ const BooksView: ComponentType<IBooksView> = (props: IBooksView): JSX.Element =>
 			}).map((book: IBook, i: number) => {
 				return <BookCard book={book} key={i} />;
 			})}
-		</Masonry>
-	);
+		</Masonry>;
 };
 
-const mapStateToProps = ({ books }) => ({ books });
+const mapStateToProps = ({ books, checkouts }) => ({ books, checkouts });
 export default connect(mapStateToProps, {
+	checkoutsSet,
 	booksSet
 })(BooksView);

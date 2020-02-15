@@ -48,6 +48,22 @@ const getBookByISBN = (isbn: string) => {
 		.then(res => res.json());
 };
 
+/* 				  Checkout Handlers
+============================================== */
+
+const getAllCheckouts = () => {
+	return fetch(`${baseUrl}/checkouts`)
+		.then(res => res.json());
+};
+
+/* 				  Events Handlers
+============================================== */
+
+const getAllEvents = () => {
+	return fetch(`${baseUrl}/events`)
+		.then(res => res.json());
+};
+
 /* 				  Members Handlers
 ============================================== */
 
@@ -60,10 +76,6 @@ const getMemberByID = (id: string) => {
 	return fetch(`${baseUrl}/members/${id}`)
 		.then(res => res.json());
 };
-
-
-/* 				  Events Handlers
-============================================== */
 
 
 export interface IAPI {
@@ -79,6 +91,9 @@ export interface IAPI {
 	// Books
 	getAllBooks: typeof getAllBooks
 	getBookByISBN: typeof getBookByISBN
+
+	// Checkouts
+	getAllCheckouts: typeof getAllCheckouts
 
 	// Members
 	getAllMembers: typeof getAllMembers
@@ -98,6 +113,9 @@ export const api: IAPI = {
 	// Books
 	getAllBooks,
 	getBookByISBN,
+
+	// Checkouts
+	getAllCheckouts,
 
 	// Members
 	getAllMembers,
