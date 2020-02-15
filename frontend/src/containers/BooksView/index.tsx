@@ -6,47 +6,30 @@ import { AuthorsState } from "../../store/reducers/authorsReducer";
 import { BookState } from "../../store/reducers/booksReducer";
 
 
-export interface ICardsView {
+export interface IBooksView {
 	authorsSet: typeof authorsSet
 	booksSet: typeof booksSet
 	authors: AuthorsState
 	books: BookState
-	view: number
 }
 
 /**
  * View/layout container for author/book cards lists.
- * @param {ICardsView} props
+ * @param {IBooksView} props
  * @returns {JSX.Element}
  * @constructor
  */
-const CardsView: ComponentType<ICardsView> = (props: ICardsView): JSX.Element => {
-	console.log("props::", props);
-
-	const handleAuthorData = (data: any[]) => {
-		const authors = data as AuthorsState;
-		props.authorsSet(authors);
-	};
+const BooksView: ComponentType<IBooksView> = (props: IBooksView): JSX.Element => {
 
 	const handleBookData = (data: any[]) => {
 		const books = data as BookState;
 		props.booksSet(books);
 	};
 
-	const viewHandler = (data: any[]) => {
-		return props.view === 1
-			? handleBookData(data)
-			: handleAuthorData(data);
-	};
-
-	const getViewData = props.view === 1
-		? api.getAllBooks
-		: api.getAllAuthors;
-
 	useEffect(() => {
-		getViewData().then(res => {
+		api.getAllBooks().then(res => {
 			if (res.data.length) {
-				return viewHandler(res.data);
+				return handleBookData(res.data);
 			}
 
 			// Seed the database if there's no test data yet.
@@ -56,11 +39,11 @@ const CardsView: ComponentType<ICardsView> = (props: ICardsView): JSX.Element =>
 
 			console.log("res::", res);
 		}).catch(console.error);
-	}, [props.view]);
+	}, []);
 
 	return (
 		<div>
-			CARDS VIEW
+			BOOKS VIEW
 		</div>
 	);
 };
@@ -69,4 +52,4 @@ const mapStateToProps = ({ authors, books }) => ({ authors, books });
 export default connect(mapStateToProps, {
 	authorsSet,
 	booksSet
-})(CardsView);
+})(BooksView);

@@ -1,15 +1,18 @@
-header {
-  background-color: #17243a;
+#navHeader {
   color: azure;
-  display: flex;
-  justify-content: space-between;
-  padding: 1rem;
 
-  .left-group {
-    display: flex;
+  #headerContainer {
+    display: inline-flex;
 
-    svg {
-      padding: 0 .5rem;
+    #logoWrap {
+      display: flex;
+      align-items: center;
+      margin-right: .75rem;
+
+      svg {
+        margin: 0 auto;
+        display: block;
+      }
     }
   }
 }
