@@ -28,7 +28,7 @@ jobs:
         id: go
 
       - name: Get dependencies
-        run: cs backend && go get -d -v
+        run: cd backend && go get -d -v
         
       - name: Build
         run: cd backend && go build -v .
