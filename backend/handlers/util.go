@@ -253,7 +253,7 @@ func GetSeedDatabase(w http.ResponseWriter, r *http.Request) {
 					BaseBook: db.BaseBook{
 						Description: book.Description,
 						Title:       book.Title,
-						Image:       book.Image,
+						ImageURL:    book.ImageURL,
 					},
 				}
 
