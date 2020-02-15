@@ -21,11 +21,11 @@ type AuthorResponse struct {
 
 var errorAuthorID = errors.New("author id missing in request")
 
-// IsInvalidAuthor - Check if author provided is missing data.
-func IsInvalidAuthor(author db.Author) bool {
-	hasNoFirst := author.FirstName == ""
-	hasNoLast := author.LastName == ""
-	hasNoMiddle := author.Middle == ""
+// IsInvalidPerson - Check if author provided is missing data.
+func IsInvalidPerson(person db.Person) bool {
+	hasNoFirst := person.FirstName == ""
+	hasNoLast := person.LastName == ""
+	hasNoMiddle := person.Middle == ""
 
 	return hasNoFirst && hasNoLast && hasNoMiddle
 }
@@ -71,7 +71,7 @@ func GetAuthorByID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	db.MySQL.Where(query).First(&author)
-	if IsInvalidAuthor(author) {
+	if IsInvalidPerson(author.Person) {
 		json.NewEncoder(w).Encode(EmptyItemResponse{})
 		return
 	}
@@ -137,8 +137,7 @@ func PostNewAuthor(w http.ResponseWriter, r *http.Request) {
 
 // PatchUpdateAuthor - Update an author record.
 func PatchUpdateAuthor(w http.ResponseWriter, r *http.Request) {
-	// TODO: Clean this handler up if there's time.
-	a, errQ := queryAuthorWithParamID(r)
+	query, errQ := queryAuthorWithParamID(r)
 	if errQ != nil {
 		HandleErrorResponse(w, errQ, http.StatusBadRequest)
 		return
@@ -153,15 +152,17 @@ func PatchUpdateAuthor(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var currentAuthor db.Author
-	qByID := db.Author{
+	queryAuthorByID := db.Author{
 		Person: db.Person{
-			ID: a.ID,
+			ID: query.ID,
 		},
 	}
-	db.MySQL.Unscoped().Where(qByID).First(&currentAuthor)
-	if currentAuthor.DeletedAt != nil || IsInvalidAuthor(currentAuthor) {
-		msg := fmt.Sprintf("no author with id %s found", a.ID)
+
+	// Check the authors current state from db and handle errors.
+	var currentAuthor db.Author
+	db.MySQL.Unscoped().Where(queryAuthorByID).First(&currentAuthor)
+	if currentAuthor.DeletedAt != nil || IsInvalidPerson(currentAuthor.Person) {
+		msg := fmt.Sprintf("no author with id %s found", query.ID)
 		err := errors.New(msg)
 		HandleErrorResponse(w, err, http.StatusNotFound)
 		return
@@ -175,16 +176,17 @@ func PatchUpdateAuthor(w http.ResponseWriter, r *http.Request) {
 	if author.LastName != "" {
 		updates["last_name"] = author.LastName
 	}
+	if author.Middle != "" {
+		updates["middle"] = author.Middle
+	}
 
-	author.ID = a.ID
+	// Apply updates to author.
+	author.ID = query.ID
 	updates["updated_at"] = time.Now()
 	db.MySQL.Model(&author).Updates(updates)
 
+	// Get the updated author object to return.
 	var updatedAuthor db.Author
-	query := db.Author{Person: db.Person{
-		ID: author.ID,
-	}}
-
 	db.MySQL.Where(query).First(&updatedAuthor)
 	json.NewEncoder(w).Encode(AuthorResponse{
 		Data: updatedAuthor,
