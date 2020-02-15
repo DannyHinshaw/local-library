@@ -18,6 +18,11 @@ type CheckoutResponse struct {
 	Data db.Checkout `json:"data"`
 }
 
+type CheckoutQueryPayload struct {
+	BookID   uint      `json:"book_id"`
+	MemberID uuid.UUID `json:"member_id"`
+}
+
 // Common request errors
 var errorBookID = errors.New("book id missing in request")
 
@@ -94,23 +99,34 @@ func PostNewCheckout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	checkout.CheckedOut = time.Now()
 	db.MySQL.Create(&checkout)
 	json.NewEncoder(w).Encode(CheckoutResponse{
 		Data: checkout,
 	})
 }
 
-// PatchUpdateCheckout - Update to return a checked out item.
-func PatchUpdateCheckout(w http.ResponseWriter, r *http.Request) {
-	query, err := queryCheckoutWithParams(r)
+// PatchReturnCheckout - Update to return a checked out item.
+func PatchReturnCheckout(w http.ResponseWriter, r *http.Request) {
+	var payload CheckoutQueryPayload
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&payload)
 	if err != nil {
 		HandleErrorResponse(w, err, http.StatusBadRequest)
 		return
 	}
 
+	query := &db.Checkout{
+		BookID:   payload.BookID,
+		MemberID: payload.MemberID,
+	}
+
 	var checkout db.Checkout
-	db.MySQL.Model(query).Update("returned", time.Now())
-	db.MySQL.Model(query).First(&checkout)
+	db.MySQL.Model(query).
+		Update("returned", time.Now())
+	db.MySQL.Model(query).
+		Where("book_id = ?", payload.BookID).
+		First(&checkout)
 	json.NewEncoder(w).Encode(CheckoutResponse{
 		Data: checkout,
 	})

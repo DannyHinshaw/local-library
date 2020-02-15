@@ -10,7 +10,7 @@ import (
 
 var mysqlConnectString = os.Getenv("MYSQL_CONNECT_STRING")
 
-// addConstraints - Since GORM annotations are still broken for foreign keys we do it manually here.
+// addConstraints - Create some additional constraints that are less readable in annotations..
 func addConstraints(db *gorm.DB) *gorm.DB {
 	log.Println("adding db table constraints")
 	db.Table("books_authors").AddForeignKey(
@@ -22,12 +22,6 @@ func addConstraints(db *gorm.DB) *gorm.DB {
 	db.Table("books_authors").AddForeignKey(
 		"author_id",
 		"authors(id)",
-		"CASCADE",
-		"CASCADE",
-	)
-	db.Model(&Book{}).AddForeignKey(
-		"isbn",
-		"copies(isbn)",
 		"CASCADE",
 		"CASCADE",
 	)
@@ -127,6 +121,7 @@ func getClient() *gorm.DB {
 	}
 
 	log.Println("db connection loop finished.")
+	client.LogMode(true)
 	return initTables(client)
 }
 

@@ -19,6 +19,10 @@ type PostBookPayload struct {
 	AuthorIds []uuid.UUID `json:"author_ids"`
 }
 
+type CopiesResponse struct {
+	Data []db.Copy `json:"data"`
+}
+
 type BooksResponse struct {
 	Data []db.Book `json:"data"`
 }
@@ -59,7 +63,11 @@ func queryBookWithParamID(r *http.Request) (*db.Copy, error) {
 // GetAllBooks - Get all books records.
 func GetAllBooks(w http.ResponseWriter, r *http.Request) {
 	var allBooks []db.Book
-	db.MySQL.Preload("Authors").Find(&allBooks)
+	db.MySQL.
+		Preload("Copies").
+		Preload("Authors").
+		Find(&allBooks)
+
 	json.NewEncoder(w).Encode(BooksResponse{
 		Data: allBooks,
 	})
@@ -68,16 +76,23 @@ func GetAllBooks(w http.ResponseWriter, r *http.Request) {
 // GetBookByISBN - Retrieve a single book record by it's BookID (ID).
 func GetBookByISBN(w http.ResponseWriter, r *http.Request) {
 	var book db.Book
+	queryParams := r.URL.Query()
+	authors := queryParams.Get("authors")
 	query, err := queryBookWithParamISBN(r)
 	if err != nil {
 		HandleErrorResponse(w, err, http.StatusBadRequest)
 		return
 	}
 
-	db.MySQL.
-		Preload("Authors").
-		Where(&db.Book{ISBN: query.ISBN}).
-		First(&book)
+	if authors != "" {
+		db.MySQL.Preload("Authors").Where(&db.Book{
+			ISBN: query.ISBN,
+		}).First(&book)
+	} else {
+		db.MySQL.Where(&db.Book{
+			ISBN: query.ISBN,
+		}).First(&book)
+	}
 
 	noRecord := book.ISBN == ""
 	if noRecord {
@@ -121,7 +136,7 @@ func PostNewBook(w http.ResponseWriter, r *http.Request) {
 	book.CreatedAt = now
 	book.UpdatedAt = now
 	book.Title = payload.Title
-	book.Image = payload.Image
+	book.ImageURL = payload.ImageURL
 	book.Description = payload.Description
 
 	// Sanitize ISBNs as they are inserted.
@@ -201,8 +216,8 @@ func PatchUpdateBook(w http.ResponseWriter, r *http.Request) {
 		updates["isbn"] = requestBook.ISBN
 	}
 
-	if requestBook.Image != "" {
-		updates["image"] = requestBook.Image
+	if requestBook.ImageURL != "" {
+		updates["image"] = requestBook.ImageURL
 	}
 
 	if requestBook.Title != "" {

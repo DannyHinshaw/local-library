@@ -88,7 +88,7 @@ func registerRoutes() *mux.Router {
 		HandleFunc("/checkouts/{member_id}", handlers.GetCheckoutsByMemberID).
 		Methods("GET")
 	router.
-		HandleFunc("/checkouts/{member_id}/books/{book_id}", handlers.PatchUpdateCheckout).
+		HandleFunc("/checkouts", handlers.PatchReturnCheckout).
 		Methods("PATCH")
 
 	// Events

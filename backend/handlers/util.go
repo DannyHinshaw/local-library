@@ -25,7 +25,7 @@ type SeedBook struct {
 }
 
 type EmptyItemResponse struct {
-	Data interface{} `json:"data"`
+	Data interface{} `json:"data,omitempty"`
 }
 
 type EventsResponse struct {
@@ -248,8 +248,8 @@ func GetSeedDatabase(w http.ResponseWriter, r *http.Request) {
 				}
 
 				newBook := db.Book{
-					ISBN: book.ISBN,
-					Base: base,
+					Base:   base,
+					ISBN:   book.ISBN,
 					BaseBook: db.BaseBook{
 						Description: book.Description,
 						Title:       book.Title,

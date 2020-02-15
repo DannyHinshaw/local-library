@@ -29,9 +29,9 @@ type Base struct {
 }
 
 type BaseBook struct {
+	Title       string `gorm:"type:varchar(12000)" json:"title"`
+	ImageURL    string `gorm:"type:varchar(2083)" json:"image_url"`
 	Description string `gorm:"type:longtext" json:"description"`
-	Title       string `gorm:"type:varchar(50)" json:"title"`
-	Image       string `gorm:"type:longtext" json:"image"`
 }
 
 type Person struct {
@@ -60,6 +60,7 @@ type Book struct {
 	BaseBook
 	ISBN    string   `gorm:"index;primary_key;type:char(13);" json:"isbn"`
 	Authors []Author `gorm:"many2many:books_authors;" json:"authors,omitempty"`
+	Copies  []Copy   `gorm:"foreignkey:ISBN;" json:"copies,omitempty"`
 }
 
 // Copy of a Book

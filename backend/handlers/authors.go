@@ -55,7 +55,14 @@ func queryAuthorWithParamID(r *http.Request) (*db.Author, error) {
 // GetAllAuthors - Retrieve all authors records.
 func GetAllAuthors(w http.ResponseWriter, r *http.Request) {
 	var allAuthors []db.Author
-	db.MySQL.Preload("Books").Find(&allAuthors)
+	queryParams := r.URL.Query()
+	authors := queryParams.Get("books")
+	if authors != "" {
+		db.MySQL.Preload("Books").Find(&allAuthors)
+	} else {
+		db.MySQL.Find(&allAuthors)
+	}
+
 	json.NewEncoder(w).Encode(AuthorsResponse{
 		Data: allAuthors,
 	})
