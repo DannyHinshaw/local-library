@@ -3,7 +3,7 @@ import "./App.css";
 import NavDrawer from "./components/NavDrawer";
 
 // App Views
-export enum VIEW {
+export enum AppView {
 	BOOKS = 1,
 	AUTHORS = 2,
 	MEMBERS = 3

@@ -1,15 +1,23 @@
 import React, { ComponentType, useEffect } from "react";
+import Masonry from "react-masonry-css";
 import { connect } from "react-redux";
 import { api } from "../../api";
-import { authorsSet, booksSet } from "../../store/actions";
-import { AuthorsState } from "../../store/reducers/authorsReducer";
+import BookCard from "../../components/BookCard";
+import { booksSet } from "../../store/actions";
 import { BookState } from "../../store/reducers/booksReducer";
+import { IBook } from "../../types";
+import "./styles.scss";
 
+
+const breakpointColumnsObj = {
+	default: 4,
+	900: 3,
+	700: 2,
+	500: 1
+};
 
 export interface IBooksView {
-	authorsSet: typeof authorsSet
 	booksSet: typeof booksSet
-	authors: AuthorsState
 	books: BookState
 }
 
@@ -42,14 +50,20 @@ const BooksView: ComponentType<IBooksView> = (props: IBooksView): JSX.Element =>
 	}, []);
 
 	return (
-		<div>
-			BOOKS VIEW
-		</div>
+		<Masonry
+			className="my-masonry-grid"
+			breakpointCols={breakpointColumnsObj}
+			columnClassName="my-masonry-grid_column">
+			{props.books.sort(function(a, b) {
+				return a.title.localeCompare(b.title);
+			}).map((book: IBook, i: number) => {
+				return <BookCard book={book} key={i} />;
+			})}
+		</Masonry>
 	);
 };
 
-const mapStateToProps = ({ authors, books }) => ({ authors, books });
+const mapStateToProps = ({ books }) => ({ books });
 export default connect(mapStateToProps, {
-	authorsSet,
 	booksSet
 })(BooksView);

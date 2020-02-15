@@ -17,7 +17,7 @@ import PeopleIcon from "@material-ui/icons/PeopleAltOutlined";
 import SupervisorAccountIcon from "@material-ui/icons/SupervisorAccountOutlined";
 import clsx from "clsx";
 import React, { ComponentType, useState } from "react";
-import { VIEW } from "../../App";
+import { AppView } from "../../App";
 import AuthorsView from "../../containers/AuthorsView";
 import BooksView from "../../containers/BooksView";
 import MembersView from "../../containers/MembersView";
@@ -95,8 +95,8 @@ const NavDrawer: ComponentType = (): JSX.Element => {
 	const theme = useTheme();
 
 	const [open, setOpen] = React.useState(false);
-	const [view, setView] = useState(VIEW.BOOKS);
-	const handleMenuItemClick = (n: VIEW) => () => setView(n);
+	const [view, setView] = useState(AppView.BOOKS);
+	const handleMenuItemClick = (n: AppView) => () => setView(n);
 
 	const handleDrawerOpen = () =>
 		setOpen(true);
@@ -107,11 +107,11 @@ const NavDrawer: ComponentType = (): JSX.Element => {
 	// Toggle current view
 	const currentView = (): JSX.Element => {
 		switch (view) {
-			case VIEW.BOOKS:
+			case AppView.BOOKS:
 				return <BooksView />;
-			case VIEW.AUTHORS:
+			case AppView.AUTHORS:
 				return <AuthorsView />;
-			case VIEW.MEMBERS:
+			case AppView.MEMBERS:
 				return <MembersView />;
 			default:
 				return <BooksView />;
