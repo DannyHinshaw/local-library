@@ -30,8 +30,8 @@ type Base struct {
 
 type BaseBook struct {
 	Description string `gorm:"type:longtext" json:"description"`
-	Title       string `json:"title"`
-	Image       string `json:"image"`
+	Title       string `gorm:"type:varchar(50)" json:"title"`
+	Image       string `gorm:"type:longtext" json:"image"`
 }
 
 type Person struct {
@@ -62,7 +62,7 @@ type Book struct {
 	Authors []Author `gorm:"many2many:books_authors;" json:"authors,omitempty"`
 }
 
-// CopyID of a Book
+// Copy of a Book
 type Copy struct {
 	ID   uint   `gorm:"index;primary_key;" json:"id"`
 	ISBN string `gorm:"index;primary_key;type:char(13);" json:"isbn"`
@@ -73,7 +73,7 @@ func (ba *Copy) TableName() string {
 }
 
 type BooksAuthors struct {
-	BookISBN string    `gorm:"index:primary_key;type:char(20);" json:"book_isbn"`
+	BookISBN string    `gorm:"index:primary_key;type:char(13);" json:"book_isbn"`
 	AuthorID uuid.UUID `gorm:"index;primary_key;" json:"author_id"`
 }
 
