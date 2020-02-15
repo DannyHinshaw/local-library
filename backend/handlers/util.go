@@ -169,7 +169,7 @@ func GetHealthCheckHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(body)
 }
 
-// GetSeedDatabase - Start seeding database with test data.
+// GetSeedDatabase - Seed the database with mock/testing data.
 func GetSeedDatabase(w http.ResponseWriter, r *http.Request) {
 
 	// Wipe the db on every request for quick dev testing
@@ -181,12 +181,12 @@ func GetSeedDatabase(w http.ResponseWriter, r *http.Request) {
 	db.MySQL.Unscoped().Delete(&db.Checkout{})
 
 	// Gather all seed data for bulk inserts
-	var insertBooksAuthorsRecords []interface{}
-	var insertCheckoutRecords []interface{}
-	var insertMemberRecords []interface{}
-	var insertAuthorRecords []interface{}
-	var insertBookRecords []interface{}
-	var insertCopyRecords []interface{}
+	var booksAuthorsRecords []interface{}
+	var checkoutRecords []interface{}
+	var memberRecords []interface{}
+	var authorRecords []interface{}
+	var bookRecords []interface{}
+	var copyRecords []interface{}
 
 	now := time.Now()
 	base := db.Base{
@@ -207,7 +207,7 @@ func GetSeedDatabase(w http.ResponseWriter, r *http.Request) {
 			},
 		}
 
-		insertMemberRecords = append(insertMemberRecords, newMember)
+		memberRecords = append(memberRecords, newMember)
 	}
 
 	// Checkouts mock data builder
@@ -227,7 +227,7 @@ func GetSeedDatabase(w http.ResponseWriter, r *http.Request) {
 			newCheckout.Returned = &returnedAtTime
 		}
 
-		insertCheckoutRecords = append(insertCheckoutRecords, newCheckout)
+		checkoutRecords = append(checkoutRecords, newCheckout)
 	}
 
 	// Authors/Books mock data builder
@@ -261,10 +261,10 @@ func GetSeedDatabase(w http.ResponseWriter, r *http.Request) {
 					ISBN: book.ISBN,
 				}
 
-				insertBookRecords = append(insertBookRecords, newBook)
-				insertCopyRecords = append(insertCopyRecords, newCopy)
-				insertAuthorRecords = append(insertAuthorRecords, newAuthor)
-				insertBooksAuthorsRecords = append(insertBooksAuthorsRecords, &db.BooksAuthors{
+				bookRecords = append(bookRecords, newBook)
+				copyRecords = append(copyRecords, newCopy)
+				authorRecords = append(authorRecords, newAuthor)
+				booksAuthorsRecords = append(booksAuthorsRecords, &db.BooksAuthors{
 					BookISBN: book.ISBN,
 					AuthorID: author.ID,
 				})
@@ -272,32 +272,32 @@ func GetSeedDatabase(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	errBulkCopies := gormbulk.BulkInsert(db.MySQL, insertCopyRecords, 3000)
+	errBulkCopies := gormbulk.BulkInsert(db.MySQL, copyRecords, 3000)
 	if errBulkCopies != nil {
 		log.Println(errBulkCopies.Error())
 		return
 	}
-	errBulkBooks := gormbulk.BulkInsert(db.MySQL, insertBookRecords, 3000)
+	errBulkBooks := gormbulk.BulkInsert(db.MySQL, bookRecords, 3000)
 	if errBulkBooks != nil {
 		log.Println(errBulkBooks.Error())
 		return
 	}
-	errBulkAuthors := gormbulk.BulkInsert(db.MySQL, insertAuthorRecords, 3000)
+	errBulkAuthors := gormbulk.BulkInsert(db.MySQL, authorRecords, 3000)
 	if errBulkAuthors != nil {
 		log.Println(errBulkAuthors.Error())
 		return
 	}
-	errBulkMembers := gormbulk.BulkInsert(db.MySQL, insertMemberRecords, 3000)
+	errBulkMembers := gormbulk.BulkInsert(db.MySQL, memberRecords, 3000)
 	if errBulkMembers != nil {
 		log.Println(errBulkMembers.Error())
 		return
 	}
-	errBulkCheckouts := gormbulk.BulkInsert(db.MySQL, insertCheckoutRecords, 3000)
+	errBulkCheckouts := gormbulk.BulkInsert(db.MySQL, checkoutRecords, 3000)
 	if errBulkCheckouts != nil {
 		log.Println(errBulkCheckouts.Error())
 		return
 	}
-	errBulkBooksAuthors := gormbulk.BulkInsert(db.MySQL, insertBooksAuthorsRecords, 3000)
+	errBulkBooksAuthors := gormbulk.BulkInsert(db.MySQL, booksAuthorsRecords, 3000)
 	if errBulkBooksAuthors != nil {
 		log.Println(errBulkBooksAuthors.Error())
 		return
