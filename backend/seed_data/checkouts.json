@@ -1,0 +1,34 @@
+[
+  {
+    "member_id": "5889014d-b63b-4903-bf04-440853a99c4b",
+    "book_id": 1
+  },
+  {
+    "member_id": "dd073711-34aa-49dd-b2fb-638da73bc6b9",
+    "book_id": 2
+  },
+  {
+    "member_id": "31954446-93ce-4f8b-95df-15a4f0d9c647",
+    "book_id": 3
+  },
+  {
+    "member_id": "6bf932e0-0bdb-46a5-955d-a768fa93307b",
+    "book_id": 4
+  },
+  {
+    "member_id": "c70e4fd7-f0e2-4311-98fa-512116ed8551",
+    "book_id": 5
+  },
+  {
+    "member_id": "2c14f8a4-a9a5-4e3f-b9f7-9f655f4c89fc",
+    "book_id": 6
+  },
+  {
+    "member_id": "f6e95e94-0e00-45d0-b885-5c91f00d25bd",
+    "book_id": 7
+  },
+  {
+    "member_id": "53ca1545-5f64-4030-b15a-0bb6c69c07dd",
+    "book_id": 8
+  }
+]
