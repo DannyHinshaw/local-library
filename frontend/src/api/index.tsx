@@ -48,6 +48,19 @@ const getBookByISBN = (isbn: string) => {
 		.then(res => res.json());
 };
 
+/* 				  Members Handlers
+============================================== */
+
+const getAllMembers = () => {
+	return fetch(`${baseUrl}/members`)
+		.then(res => res.json());
+};
+
+const getMemberByID = (id: string) => {
+	return fetch(`${baseUrl}/members/${id}`)
+		.then(res => res.json());
+};
+
 
 /* 				  Events Handlers
 ============================================== */
@@ -66,6 +79,10 @@ export interface IAPI {
 	// Books
 	getAllBooks: typeof getAllBooks
 	getBookByISBN: typeof getBookByISBN
+
+	// Members
+	getAllMembers: typeof getAllMembers
+	getMemberByID: typeof getMemberByID
 }
 
 export const api: IAPI = {
@@ -80,5 +97,9 @@ export const api: IAPI = {
 
 	// Books
 	getAllBooks,
-	getBookByISBN
+	getBookByISBN,
+
+	// Members
+	getAllMembers,
+	getMemberByID
 };
