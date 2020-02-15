@@ -12,11 +12,22 @@ import (
 	"time"
 )
 
+// RouteLogger - Logs url routes as requests come in.
+func RouteLogger(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Println(r.Method, "-", r.RequestURI)
+		next.ServeHTTP(w, r)
+	})
+}
+
 // registerRoutes - Register all endpoint routes.
 func registerRoutes() *mux.Router {
 
 	// Base router/routes
 	router := mux.NewRouter()
+
+	// Register middlewares
+	router.Use(RouteLogger)
 
 	// Util handlers
 	router.
@@ -66,14 +77,6 @@ func registerRoutes() *mux.Router {
 		HandleFunc("/books/{isbn}", handlers.DeleteBookByISBN).
 		Methods("DELETE")
 
-	// Events
-	router.
-		HandleFunc("/events/books/{isbn}", handlers.GetEventsByBookID).
-		Methods("GET")
-	router.
-		HandleFunc("/events", handlers.GetAllEvents).
-		Methods("GET")
-
 	// Checkouts
 	router.
 		HandleFunc("/checkouts", handlers.PostNewCheckout).
@@ -82,11 +85,36 @@ func registerRoutes() *mux.Router {
 		HandleFunc("/checkouts", handlers.GetAllCheckouts).
 		Methods("GET")
 	router.
-		HandleFunc("/checkouts/{book_id}", handlers.PatchUpdateCheckout).
-		Methods("PATCH")
-	router.
 		HandleFunc("/checkouts/{member_id}", handlers.GetCheckoutsByMemberID).
 		Methods("GET")
+	router.
+		HandleFunc("/checkouts/{member_id}/books/{book_id}", handlers.PatchUpdateCheckout).
+		Methods("PATCH")
+
+	// Events
+	router.
+		HandleFunc("/events/books/{isbn}", handlers.GetEventsByBookID).
+		Methods("GET")
+	router.
+		HandleFunc("/events", handlers.GetAllEvents).
+		Methods("GET")
+
+	// Members
+	router.
+		HandleFunc("/members", handlers.PostNewMember).
+		Methods("POST")
+	router.
+		HandleFunc("/members", handlers.GetAllMembers).
+		Methods("GET")
+	router.
+		HandleFunc("/members/{id}", handlers.GetMemberByID).
+		Methods("GET")
+	router.
+		HandleFunc("/members/{id}", handlers.PatchUpdateMember).
+		Methods("PATCH")
+	router.
+		HandleFunc("/members/{id}", handlers.DeleteMemberByID).
+		Methods("DELETE")
 
 	return router
 }
