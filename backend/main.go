@@ -148,6 +148,7 @@ func main() {
 	signal.Notify(c, os.Interrupt)
 
 	// Close database connection gracefully
+	// db.MySQL.LogMode(true)
 	defer db.MySQL.Close()
 
 	// Block until we receive our signal.

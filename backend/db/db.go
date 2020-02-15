@@ -121,7 +121,6 @@ func getClient() *gorm.DB {
 	}
 
 	log.Println("db connection loop finished.")
-	client.LogMode(true)
 	return initTables(client)
 }
 
