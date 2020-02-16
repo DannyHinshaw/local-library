@@ -4,7 +4,8 @@ import { connect } from "react-redux";
 import { api } from "../../api";
 import BookCard from "../../components/BookCard";
 import LoaderCircle from "../../components/LoaderCircle";
-import { booksSet, checkoutsSet } from "../../store/actions";
+import { authorsSet, booksSet, checkoutsSet } from "../../store/actions";
+import { AuthorsState } from "../../store/reducers/authorsReducer";
 import { BookState } from "../../store/reducers/booksReducer";
 import { CheckoutsState } from "../../store/reducers/checkoutsReducer";
 import { IBook, IBookCopy, ICheckout, OrNull } from "../../types";
@@ -20,6 +21,7 @@ const breakpointColumnsObj = {
 
 export interface IBooksView {
 	checkoutsSet: typeof checkoutsSet
+	authorsSet: typeof authorsSet
 	booksSet: typeof booksSet
 	checkouts: CheckoutsState
 	books: BookState
@@ -40,6 +42,11 @@ const BooksView: ComponentType<IBooksView> = (props: IBooksView): JSX.Element =>
 		return props.checkoutsSet(checkouts);
 	};
 
+	const handleAuthorData = (data: any[]) => {
+		const authors = data as AuthorsState;
+		return props.authorsSet(authors);
+	};
+
 	const handleBookData = (data: any[]) => {
 		const books = data as BookState;
 		return props.booksSet(books);
@@ -52,6 +59,13 @@ const BooksView: ComponentType<IBooksView> = (props: IBooksView): JSX.Element =>
 			: null;
 	});
 
+	// Retrieve and store authors.
+	const fetchAuthors = () => api.getAllAuthors().then((res): OrNull<any> => {
+		return res.data.length
+			? handleAuthorData(res.data)
+			: null;
+	});
+
 	// Retrieve and store books.
 	const fetchBooks = () => api.getAllBooks().then((res): OrNull<any> => {
 		return res.data.length
@@ -61,7 +75,11 @@ const BooksView: ComponentType<IBooksView> = (props: IBooksView): JSX.Element =>
 
 	useEffect(() => {
 		if (!props.books.length && !props.checkouts.length) {
-			Promise.all([fetchBooks(), fetchCheckouts()]).then((hasData) => {
+			Promise.all([
+				fetchBooks(),
+				fetchAuthors(),
+				fetchCheckouts()
+			]).then((hasData) => {
 
 				// Seed the database if there's no test data yet.
 				if (!hasData[0]) {
@@ -125,5 +143,6 @@ const BooksView: ComponentType<IBooksView> = (props: IBooksView): JSX.Element =>
 const mapStateToProps = ({ books, checkouts }) => ({ books, checkouts });
 export default connect(mapStateToProps, {
 	checkoutsSet,
+	authorsSet,
 	booksSet
 })(BooksView);
