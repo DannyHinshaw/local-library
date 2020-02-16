@@ -31,12 +31,6 @@ func addConstraints(db *gorm.DB) *gorm.DB {
 		"CASCADE",
 		"CASCADE",
 	)
-	db.Model(&Event{}).AddForeignKey(
-		"isbn",
-		"books(isbn)",
-		"CASCADE",
-		"CASCADE",
-	)
 
 	return db
 }
@@ -94,7 +88,7 @@ func initTables(db *gorm.DB) *gorm.DB {
 
 // getClient - Util function to create mysql gorm client (deferred Close() in root/db.go).
 func getClient() *gorm.DB {
-	interval := time.Duration(5) * time.Second
+	interval := time.Duration(3) * time.Second
 	retries := 10
 
 	// Sometimes MySQL takes a little bit to be ready for connections.

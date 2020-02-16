@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/gorilla/mux"
 	"log"
-	"main/db"
 	"main/handlers"
 	"net/http"
 	"os"
@@ -93,7 +92,7 @@ func registerRoutes() *mux.Router {
 
 	// Events
 	router.
-		HandleFunc("/events/books/{isbn}", handlers.GetEventsByBookID).
+		HandleFunc("/events/books/{isbn}", handlers.GetEventsByBookISBN).
 		Methods("GET")
 	router.
 		HandleFunc("/events", handlers.GetAllEvents).
@@ -148,8 +147,8 @@ func main() {
 	signal.Notify(c, os.Interrupt)
 
 	// Close database connection gracefully
-	// db.MySQL.LogMode(true)
-	defer db.MySQL.Close()
+	//db.MySQL.LogMode(true)
+	//defer db.MySQL.Close()
 
 	// Block until we receive our signal.
 	<-c

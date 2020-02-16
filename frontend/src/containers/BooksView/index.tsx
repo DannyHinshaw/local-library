@@ -7,7 +7,7 @@ import LoaderCircle from "../../components/LoaderCircle";
 import { booksSet, checkoutsSet } from "../../store/actions";
 import { BookState } from "../../store/reducers/booksReducer";
 import { CheckoutsState } from "../../store/reducers/checkoutsReducer";
-import { IBook, OrNull } from "../../types";
+import { IBook, IBookCopy, ICheckout, OrNull } from "../../types";
 import "./styles.scss";
 
 
@@ -78,6 +78,39 @@ const BooksView: ComponentType<IBooksView> = (props: IBooksView): JSX.Element =>
 		}
 	}, []);
 
+	const sortBooksByTitle = (a, b): number => {
+		return a.title.localeCompare(b.title);
+	};
+
+	const currentlyCheckedOut = props.checkouts.filter((checkout: ICheckout) => {
+		return !checkout.returned;
+	});
+
+	const numCopiesCheckedOut = (copies: IBookCopy[]) => {
+		return copies.reduce((base, copy) => {
+			const bookID = copy.id;
+			const isCheckedOut = currentlyCheckedOut.some(c => {
+				return c.book_id === bookID;
+			});
+
+			return isCheckedOut ? base + 1 : base;
+		}, 0);
+	};
+
+	const renderCards = (): JSX.Element[] => {
+		const booksSorted: IBook[] = props.books.sort(sortBooksByTitle);
+		return booksSorted.map((book: IBook, i: number) => {
+			const numCopies: number = book.copies ? book.copies.length : 0;
+			const numCheckedOut = numCopiesCheckedOut(book.copies);
+			const available: number = numCopies - numCheckedOut;
+
+			return <BookCard
+				totalCopies={numCopies}
+				copiesAvailable={available}
+				book={book}
+				key={i} />;
+		});
+	};
 
 	return loading
 		? <LoaderCircle size={100} />
@@ -85,11 +118,7 @@ const BooksView: ComponentType<IBooksView> = (props: IBooksView): JSX.Element =>
 			className="my-masonry-grid"
 			breakpointCols={breakpointColumnsObj}
 			columnClassName="my-masonry-grid_column">
-			{props.books.sort(function(a, b) {
-				return a.title.localeCompare(b.title);
-			}).map((book: IBook, i: number) => {
-				return <BookCard book={book} key={i} />;
-			})}
+			{renderCards()}
 		</Masonry>;
 };
 

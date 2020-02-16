@@ -13,7 +13,11 @@ import checkoutsReducer from "./reducers/checkoutsReducer";
 const persistConfig: PersistConfig<any> = {
 	key: "root",
 	storage: storageSession,
-	blacklist: []
+	blacklist: [
+		"checkouts",
+		"authors",
+		"books"
+	]
 };
 
 /**

@@ -10,9 +10,10 @@ import Typography from "@material-ui/core/Typography";
 import DeleteForeverIcon from "@material-ui/icons/DeleteForeverOutlined";
 import EditOutlinedIcon from "@material-ui/icons/EditOutlined";
 import History from "@material-ui/icons/HistoryOutlined";
-import React, { ComponentType } from "react";
+import React, { ComponentType, useState } from "react";
 import ReactImageFallback from "react-image-fallback";
 import { IBook } from "../../types";
+import HistoryDialog from "../HistoryDialog";
 
 
 const useStyles = makeStyles({
@@ -29,6 +30,8 @@ const useStyles = makeStyles({
 });
 
 export interface IBookCardProps {
+	copiesAvailable: number
+	totalCopies: number
 	book: IBook
 }
 
@@ -43,6 +46,10 @@ const initialImageURL = "images/image-loading.gif";
  */
 const BookCard: ComponentType<IBookCardProps> = (props: IBookCardProps): JSX.Element => {
 	const classes = useStyles();
+	const [openHistory, setOpenHistory] = useState(false);
+
+	const handleClickHistory = () =>
+		setOpenHistory(!openHistory);
 
 	return (
 		<Card className={classes.root}>
@@ -56,19 +63,43 @@ const BookCard: ComponentType<IBookCardProps> = (props: IBookCardProps): JSX.Ele
 						alt="Book Cover" />
 				</CardMedia>
 				<CardContent>
+
+					{/* Title */}
 					<Typography gutterBottom variant="h5" component="h2">
 						{props.book.title}
 					</Typography>
+
+					{/* Authors */}
+					{props.book.authors.map((a, i) => {
+						return (
+							<Typography key={i}>
+								{`${a.first_name} ${a.middle ? a.middle + " " : ""}${a.last_name}`}
+							</Typography>
+						);
+					})}
+					<Typography style={{ margin: ".5rem 0" }} gutterBottom component="p">
+						{props.copiesAvailable}/{props.totalCopies} Copies Available
+					</Typography>
+
+					{/* Description */}
 					<Typography variant="body2" color="textSecondary" component="p">
 						{props.book.description}
 					</Typography>
 				</CardContent>
 			</CardActionArea>
 			<CardActions style={{ display: "flex", justifyContent: "center" }}>
-				<Tooltip title="History">
-					<IconButton>
-						<History />
-					</IconButton>
+
+				{/* Open Dialog for Book Edit History (Events) */}
+				<Tooltip title="Edit History">
+					<>
+						<IconButton onClick={handleClickHistory}>
+							<History />
+						</IconButton>
+						<HistoryDialog
+							setOpen={setOpenHistory}
+							open={openHistory}
+							book={props.book} />
+					</>
 				</Tooltip>
 
 				<Tooltip title="Edit">

@@ -31,7 +31,10 @@
     "strict": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "noEmit": true
+    "noEmit": true,
+    "typeRoots": [
+      "./src/types.d.ts"
+    ]
   },
   "include": [
     "src"

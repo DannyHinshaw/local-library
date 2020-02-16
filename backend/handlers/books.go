@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	uuid "github.com/satori/go.uuid"
+	gormbulk "github.com/t-tiger/gorm-bulk-insert"
 	"log"
 	"main/db"
 	"net/http"
@@ -15,7 +16,7 @@ import (
 
 type PostBookPayload struct {
 	db.Book
-	CopyID    uint        `json:"copy_id"`
+	Copies    int         `json:"copies"`
 	AuthorIds []uuid.UUID `json:"author_ids"`
 }
 
@@ -63,11 +64,7 @@ func queryBookWithParamID(r *http.Request) (*db.Copy, error) {
 // GetAllBooks - Get all books records.
 func GetAllBooks(w http.ResponseWriter, r *http.Request) {
 	var allBooks []db.Book
-	db.MySQL.
-		Preload("Copies").
-		Preload("Authors").
-		Find(&allBooks)
-
+	db.GetAllBooksWithRelations(&allBooks)
 	json.NewEncoder(w).Encode(BooksResponse{
 		Data: allBooks,
 	})
@@ -75,24 +72,14 @@ func GetAllBooks(w http.ResponseWriter, r *http.Request) {
 
 // GetBookByISBN - Retrieve a single book record by it's BookID (ID).
 func GetBookByISBN(w http.ResponseWriter, r *http.Request) {
-	var book db.Book
-	queryParams := r.URL.Query()
-	authors := queryParams.Get("authors")
 	query, err := queryBookWithParamISBN(r)
 	if err != nil {
 		HandleErrorResponse(w, err, http.StatusBadRequest)
 		return
 	}
 
-	if authors != "" {
-		db.MySQL.Preload("Authors").Where(&db.Book{
-			ISBN: query.ISBN,
-		}).First(&book)
-	} else {
-		db.MySQL.Where(&db.Book{
-			ISBN: query.ISBN,
-		}).First(&book)
-	}
+	var book db.Book
+	db.GetBookWithRelations(query, &book)
 
 	noRecord := book.ISBN == ""
 	if noRecord {
@@ -130,24 +117,26 @@ func PostNewBook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Sanitize ISBNs as they are inserted.
+	isbn := strings.Replace(payload.ISBN, "-", "", -1)
+
 	// Create new Book object
 	var book db.Book
 	now := time.Now()
+	book.ISBN = isbn
 	book.CreatedAt = now
 	book.UpdatedAt = now
 	book.Title = payload.Title
 	book.ImageURL = payload.ImageURL
 	book.Description = payload.Description
 
-	// Sanitize ISBNs as they are inserted.
-	book.ISBN = strings.Replace(payload.ISBN, "-", "", -1)
-
-	// Check the book doesn't already exist (including "deletes")
+	// Check the book doesn't already exist (including soft "deletes")
 	var presentBook db.Book
-	query := &db.Book{ISBN: payload.ISBN}
+	query := &db.Book{ISBN: isbn}
 	db.MySQL.Unscoped().Where(query).First(&presentBook)
 	isDeleted := presentBook.DeletedAt != nil
 	if isDeleted {
+		// FIXME: If there's time, this is a hack.
 		// If it's been soft deleted we can just do a hard delete of
 		//	the duplicate row so we can re-insert with normal flow.
 		db.MySQL.Unscoped().Where(query).Delete(&db.Book{})
@@ -155,38 +144,66 @@ func PostNewBook(w http.ResponseWriter, r *http.Request) {
 
 	// If the ISBN already exists we create a new book copy.
 	if presentBook.ISBN != "" && !isDeleted {
-		log.Println("book with that isbn already exists, creating new copy")
-		newCopy := db.Copy{ISBN: presentBook.ISBN}
-		db.MySQL.Create(&newCopy)
-		json.NewEncoder(w).Encode(BookResponse{
-			Data: presentBook,
-		})
+		errMsg := "book with that isbn already exists, creating new copy"
+		HandleErrorResponse(w, errors.New(errMsg), http.StatusConflict)
 		return
 	}
 
-	// Insert order matters
-	db.MySQL.Create(&db.Copy{ISBN: book.ISBN})
-	db.MySQL.Create(&book)
-	db.CreateNewBookEvent(book, db.CREATE)
+	// Build book copies for insertion
+	var copyRecords []interface{}
+	for i := 0; i < payload.Copies; i++ {
+		copyRecords = append(copyRecords, db.Copy{ISBN: isbn})
+	}
 
-	// Insert BooksAuthors relations from payload.author_ids.
+	// Insert book copies
+	errBulkCopies := gormbulk.BulkInsert(db.MySQL, copyRecords, 3000)
+	if errBulkCopies != nil {
+		log.Println(errBulkCopies.Error())
+		return
+	}
+
+	// Insert and retrieve new book
+	var newBook db.Book
+	db.MySQL.Create(&book)
+	db.GetBookWithRelations(query, &newBook)
+
+	// Build book w/copies CREATE events
+	var eventRecords []interface{}
+	for _, bookCopy := range newBook.Copies {
+		event := db.Event{
+			BaseBook:  newBook.BaseBook,
+			BookID:    bookCopy.ID,
+			EventType: db.CREATE,
+			ISBN:      isbn,
+		}
+
+		eventRecords = append(eventRecords, event)
+	}
+
+	// Insert creation events for all copies.
+	errBulkBooksEvents := gormbulk.BulkInsert(db.MySQL, eventRecords, 3000)
+	if errBulkBooksEvents != nil {
+		log.Println(errBulkBooksEvents.Error())
+		return
+	}
+
+	// Insert BooksAuthors relations from payload.
 	errBulk := db.BulkInsertBooksAuthors(payload.AuthorIds, payload.ISBN)
 	if errBulk != nil {
 		HandleErrorResponse(w, errBulk, http.StatusBadRequest)
 		return
 	}
 
-	// Return the newly created book in response
-	var newBook db.Book
-	db.MySQL.Preload("Authors").Where(query).First(&newBook)
+	// Return the newly created book with all relations in response
+	var bookWithAll db.Book
+	db.GetBookWithRelations(query, &bookWithAll)
 	json.NewEncoder(w).Encode(BookResponse{
-		Data: newBook,
+		Data: bookWithAll,
 	})
 }
 
 // PatchUpdateBook - Update a book record by it's BookID.
 func PatchUpdateBook(w http.ResponseWriter, r *http.Request) {
-	var requestBook db.Book
 	query, err := queryBookWithParamISBN(r)
 	if err != nil {
 		HandleErrorResponse(w, err, http.StatusBadRequest)
@@ -194,6 +211,7 @@ func PatchUpdateBook(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Parse request body json.
+	var requestBook db.Book
 	decoder := json.NewDecoder(r.Body)
 	errJSON := decoder.Decode(&requestBook)
 	if errJSON != nil {
@@ -230,13 +248,11 @@ func PatchUpdateBook(w http.ResponseWriter, r *http.Request) {
 
 	// Apply updates and record requestBook event
 	updates["updated_at"] = time.Now()
-	db.MySQL.
-		Model(&db.Book{ISBN: query.ISBN}).
-		Updates(updates)
-	db.CreateNewBookEvent(book, db.UPDATE)
+	db.MySQL.Model(&db.Book{ISBN: query.ISBN}).Updates(updates)
 
 	var newBook db.Book
-	db.MySQL.Preload("Authors").Where(query).First(&newBook)
+	db.GetBookWithRelations(query, &newBook)
+	db.CreateNewBookEvents(newBook, db.UPDATE)
 	json.NewEncoder(w).Encode(BookResponse{
 		Data: newBook,
 	})
@@ -254,5 +270,5 @@ func DeleteBookByISBN(w http.ResponseWriter, r *http.Request) {
 	// Delete and record the event
 	db.MySQL.Where(query).First(&book)
 	db.MySQL.Where(query).Delete(&db.Book{})
-	db.CreateNewBookEvent(book, db.DELETE)
+	db.CreateNewBookEvents(book, db.DELETE)
 }

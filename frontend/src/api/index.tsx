@@ -64,6 +64,11 @@ const getAllEvents = () => {
 		.then(res => res.json());
 };
 
+const getEventsByBookISBN = (isbn: string) => {
+	return fetch(`${baseUrl}/events/books/${isbn}`)
+		.then(res => res.json());
+};
+
 /* 				  Members Handlers
 ============================================== */
 
@@ -95,6 +100,10 @@ export interface IAPI {
 	// Checkouts
 	getAllCheckouts: typeof getAllCheckouts
 
+	// Events
+	getAllEvents: typeof getAllEvents
+	getEventsByBookISBN: typeof getEventsByBookISBN
+
 	// Members
 	getAllMembers: typeof getAllMembers
 	getMemberByID: typeof getMemberByID
@@ -116,6 +125,10 @@ export const api: IAPI = {
 
 	// Checkouts
 	getAllCheckouts,
+
+	// Events
+	getAllEvents,
+	getEventsByBookISBN,
 
 	// Members
 	getAllMembers,

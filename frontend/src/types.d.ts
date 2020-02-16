@@ -15,7 +15,7 @@ export interface IBase {
 }
 
 export interface IBookCopy {
-	book_id: number
+	id: number
 	isbn: string
 }
 
@@ -57,6 +57,7 @@ export interface IBook extends IBookBase {
 
 export interface IEvent extends IBookBase {
 	event_type: BookEventType
+	book_id: string
 	isbn: string
 	id: number
 }
