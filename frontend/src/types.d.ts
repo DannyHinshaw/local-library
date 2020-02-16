@@ -1,6 +1,7 @@
 import { Dispatch, SetStateAction } from "react";
 
 export type StateSetter<T> = Dispatch<SetStateAction<T>>;
+export type OrUndefined<T> = T | undefined;
 export type OrNull<T> = T | null;
 
 export enum BookEventType {
@@ -16,6 +17,20 @@ export interface IBase {
 
 export interface IBookCopy {
 	id: number
+	isbn: string
+}
+
+export interface IBookBase extends IBase {
+	description: string
+	image_url: string
+	title: string
+}
+
+export interface IBook extends IBookBase {
+	description: string
+	authors: IAuthor[]
+	copies: IBookCopy[]
+	title: string
 	isbn: string
 }
 
@@ -39,20 +54,6 @@ export interface IMembers extends IPerson {
 
 export interface IAuthor extends IPerson {
 	books: IBook[]
-}
-
-export interface IBookBase extends IBase {
-	description: string
-	image_url: string
-	title: string
-}
-
-export interface IBook extends IBookBase {
-	description: string
-	authors: IAuthor[]
-	copies: IBookCopy[]
-	title: string
-	isbn: string
 }
 
 export interface IEvent extends IBookBase {

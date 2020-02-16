@@ -1,8 +1,32 @@
 /* =======================================================
- *					        Utility Functions
+ *					        Config/Types
 ======================================================= */
 
+export interface IBookPayloadBase {
+	isbn: string // Required by all book endpoints
+}
+
+export interface IPatchUpdateBookPayload extends IBookPayloadBase {
+	description?: string
+	author_ids?: string[]
+	image_url?: string
+	title?: string
+}
+
+export interface IPostNewBookPayload extends IBookPayloadBase {
+	description: string
+	author_ids: string[]
+	image_url: string
+	copies: number
+	title: string
+	isbn: string // Required by endpoint
+}
+
 export const baseUrl: string = "http://localhost:8000";
+
+/* =======================================================
+ *					        Utility Functions
+======================================================= */
 
 
 /* =======================================================
@@ -47,6 +71,28 @@ const getBookByISBN = (isbn: string) => {
 	return fetch(`${baseUrl}/books/${isbn}`)
 		.then(res => res.json());
 };
+
+const patchUpdateBookByISBN = (payload: IPatchUpdateBookPayload) => {
+	const { isbn } = payload;
+	return fetch(`${baseUrl}/books/${isbn}`, {
+		method: "PATCH",
+		body: JSON.stringify(payload)
+	});
+};
+
+const deleteBookByISBN = (isbn: string) => {
+	return fetch(`${baseUrl}/books/${isbn}`, {
+		method: "DELETE"
+	});
+};
+
+const postNewBook = (payload: IPostNewBookPayload) => {
+	return fetch(`${baseUrl}/books`, {
+		method: "POST",
+		body: JSON.stringify(payload)
+	});
+};
+
 
 /* 				  Checkout Handlers
 ============================================== */
@@ -96,6 +142,8 @@ export interface IAPI {
 	// Books
 	getAllBooks: typeof getAllBooks
 	getBookByISBN: typeof getBookByISBN
+	postNewBook: typeof postNewBook
+	patchUpdateBookByISBN: typeof patchUpdateBookByISBN
 
 	// Checkouts
 	getAllCheckouts: typeof getAllCheckouts
@@ -122,6 +170,8 @@ export const api: IAPI = {
 	// Books
 	getAllBooks,
 	getBookByISBN,
+	postNewBook,
+	patchUpdateBookByISBN,
 
 	// Checkouts
 	getAllCheckouts,

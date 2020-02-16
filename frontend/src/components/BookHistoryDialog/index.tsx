@@ -10,23 +10,19 @@ import { IBook, IEvent, OrNull, StateSetter } from "../../types";
 import HistoryList from "../HistoryList";
 
 
-interface IBookHistoryProps {
+interface IBookHistoryDialog {
 	setOpen: StateSetter<boolean>
 	open: boolean
 	book: IBook
 }
 
-interface IEventsResponse {
-	data: IEvent[]
-}
-
 /**
  * Dialog to display book event history.
- * @param {IBookHistoryProps} props
+ * @param {IBookHistoryDialog} props
  * @returns {JSX.Element}
  * @constructor
  */
-const HistoryDialog: ComponentType<IBookHistoryProps> = (props: IBookHistoryProps): JSX.Element => {
+const BookHistoryDialog: ComponentType<IBookHistoryDialog> = (props: IBookHistoryDialog): JSX.Element => {
 	const { open } = props;
 	const [events, setEvents] = useState([] as IEvent[]);
 	const [loading, setLoading] = useState(true);
@@ -95,4 +91,4 @@ const HistoryDialog: ComponentType<IBookHistoryProps> = (props: IBookHistoryProp
 	);
 };
 
-export default HistoryDialog;
+export default BookHistoryDialog;

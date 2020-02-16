@@ -80,12 +80,14 @@ const BooksView: ComponentType<IBooksView> = (props: IBooksView): JSX.Element =>
 				fetchAuthors(),
 				fetchCheckouts()
 			]).then((hasData) => {
+				console.log("hasData::", hasData);
+				console.log("!hasData[0]::", !hasData[0]);
 
 				// Seed the database if there's no test data yet.
 				if (!hasData[0]) {
 					return api.getSeedDatabase()
 						.then(console.log)
-						.then(stopLoader)
+						.then(window.location.reload)
 						.catch(console.error);
 				}
 
@@ -140,7 +142,8 @@ const BooksView: ComponentType<IBooksView> = (props: IBooksView): JSX.Element =>
 		</Masonry>;
 };
 
-const mapStateToProps = ({ books, checkouts }) => ({ books, checkouts });
+const mapStateToProps = ({ books, checkouts }) =>
+	({ books, checkouts });
 export default connect(mapStateToProps, {
 	checkoutsSet,
 	authorsSet,

@@ -10,10 +10,16 @@ import Typography from "@material-ui/core/Typography";
 import DeleteForeverIcon from "@material-ui/icons/DeleteForeverOutlined";
 import EditOutlinedIcon from "@material-ui/icons/EditOutlined";
 import History from "@material-ui/icons/HistoryOutlined";
-import React, { ComponentType, useState } from "react";
+import React, { ComponentType, useEffect, useState } from "react";
 import ReactImageFallback from "react-image-fallback";
-import { IBook } from "../../types";
-import HistoryDialog from "../HistoryDialog";
+import { api } from "../../api";
+import { store } from "../../store";
+import { booksSet } from "../../store/actions";
+import { BookState } from "../../store/reducers/booksReducer";
+import { IBook, OrNull } from "../../types";
+import { getAuthorName } from "../../util/data";
+import BookEditDialog from "../BookEditDialog";
+import BookHistoryDialog from "../BookHistoryDialog";
 
 
 const useStyles = makeStyles({
@@ -46,10 +52,41 @@ const initialImageURL = "images/image-loading.gif";
  */
 const BookCard: ComponentType<IBookCardProps> = (props: IBookCardProps): JSX.Element => {
 	const classes = useStyles();
-	const [openHistory, setOpenHistory] = useState(false);
+	const [openHistoryDialog, setOpenHistoryDialog] = useState(false);
+	const [openEditDialog, setOpenEditDialog] = useState(false);
+	const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+	const [refresh, setRefresh] = useState(false);
+
+	const handleBookData = (data: any[]) => {
+		const books = data as BookState;
+		return store.dispatch(booksSet(books));
+	};
+
+	// Retrieve and store books.
+	const fetchBooks = () => api.getAllBooks().then((res): OrNull<any> => {
+		return res.data.length
+			? handleBookData(res.data)
+			: null;
+	});
+
+	// List to refresh books data
+	useEffect(() => {
+		if (refresh) {
+			fetchBooks().then(res => {
+				console.log("done refreshing");
+				setRefresh(false);
+			});
+		}
+	}, [refresh]);
 
 	const handleClickHistory = () =>
-		setOpenHistory(!openHistory);
+		setOpenHistoryDialog(!openHistoryDialog);
+
+	const handleClickEdit = () =>
+		setOpenEditDialog(!openEditDialog);
+
+	const handleClickDelete = () =>
+		setOpenDeleteDialog(!openDeleteDialog);
 
 	return (
 		<Card className={classes.root}>
@@ -73,10 +110,12 @@ const BookCard: ComponentType<IBookCardProps> = (props: IBookCardProps): JSX.Ele
 					{props.book.authors.map((a, i) => {
 						return (
 							<Typography key={i}>
-								{`${a.first_name} ${a.middle ? a.middle + " " : ""}${a.last_name}`}
+								{getAuthorName(a)}
 							</Typography>
 						);
 					})}
+
+					{/* Copies Available */}
 					<Typography style={{ margin: ".5rem 0" }} gutterBottom component="p">
 						{props.copiesAvailable}/{props.totalCopies} Copies Available
 					</Typography>
@@ -85,6 +124,7 @@ const BookCard: ComponentType<IBookCardProps> = (props: IBookCardProps): JSX.Ele
 					<Typography variant="body2" color="textSecondary" component="p">
 						{props.book.description}
 					</Typography>
+
 				</CardContent>
 			</CardActionArea>
 			<CardActions style={{ display: "flex", justifyContent: "center" }}>
@@ -95,21 +135,29 @@ const BookCard: ComponentType<IBookCardProps> = (props: IBookCardProps): JSX.Ele
 						<IconButton onClick={handleClickHistory}>
 							<History />
 						</IconButton>
-						<HistoryDialog
-							setOpen={setOpenHistory}
-							open={openHistory}
+						<BookHistoryDialog
+							setOpen={setOpenHistoryDialog}
+							open={openHistoryDialog}
 							book={props.book} />
 					</>
 				</Tooltip>
 
 				<Tooltip title="Edit">
-					<IconButton>
-						<EditOutlinedIcon />
-					</IconButton>
+					<>
+						<IconButton onClick={handleClickEdit}>
+							<EditOutlinedIcon />
+						</IconButton>
+						<BookEditDialog
+							setRefresh={setRefresh}
+							setOpen={setOpenEditDialog}
+							open={openEditDialog}
+							book={props.book} />
+					</>
 				</Tooltip>
 
+				{/* TODO: Delete popover confirmation */}
 				<Tooltip title="Delete">
-					<IconButton>
+					<IconButton onClick={handleClickDelete}>
 						<DeleteForeverIcon />
 					</IconButton>
 				</Tooltip>

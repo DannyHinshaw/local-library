@@ -20,6 +20,13 @@ type PostBookPayload struct {
 	AuthorIds []uuid.UUID `json:"author_ids"`
 }
 
+type PatchBookPayload struct {
+	Title       string      `json:"title"`
+	ImageURL    string      `json:"image_url"`
+	Description string      `json:"description"`
+	AuthorIds   []uuid.UUID `json:"author_ids"`
+}
+
 type CopiesResponse struct {
 	Data []db.Copy `json:"data"`
 }
@@ -34,6 +41,16 @@ type BookResponse struct {
 
 // Common request errors
 var errorBookISBN = errors.New("book isbn missing in request")
+
+// sliceContainsString - Util function to check a slice of strings for a string.
+func sliceContainsUUID(s []uuid.UUID, e uuid.UUID) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
+}
 
 // queryBookWithParamISBN - Build gorm book query with id from url params.
 func queryBookWithParamISBN(r *http.Request) (*db.Book, error) {
@@ -188,9 +205,9 @@ func PostNewBook(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Insert BooksAuthors relations from payload.
-	errBulk := db.BulkInsertBooksAuthors(payload.AuthorIds, payload.ISBN)
-	if errBulk != nil {
-		HandleErrorResponse(w, errBulk, http.StatusBadRequest)
+	errBulkAuthors := db.BulkInsertBooksAuthors(payload.AuthorIds, payload.ISBN)
+	if errBulkAuthors != nil {
+		HandleErrorResponse(w, errBulkAuthors, http.StatusBadRequest)
 		return
 	}
 
@@ -211,16 +228,17 @@ func PatchUpdateBook(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Parse request body json.
-	var requestBook db.Book
+	var patchPayload PatchBookPayload
 	decoder := json.NewDecoder(r.Body)
-	errJSON := decoder.Decode(&requestBook)
+	errJSON := decoder.Decode(&patchPayload)
 	if errJSON != nil {
 		HandleErrorResponse(w, errJSON, http.StatusBadRequest)
 		return
 	}
 
+	// Make sure book exists already.
 	var book db.Book
-	db.MySQL.Unscoped().Where(query).First(&book)
+	db.GetBookWithRelations(query, &book)
 	if book.DeletedAt != nil || book.ISBN == "" {
 		msg := fmt.Sprintf("no book with isbn %s found", query.ISBN)
 		err := errors.New(msg)
@@ -230,20 +248,48 @@ func PatchUpdateBook(w http.ResponseWriter, r *http.Request) {
 
 	// Update only what's supplied
 	updates := map[string]interface{}{}
-	if requestBook.ISBN != "" {
-		updates["isbn"] = requestBook.ISBN
+	if patchPayload.Title != "" {
+		updates["title"] = patchPayload.Title
+	}
+	if patchPayload.ImageURL != "" {
+		updates["image_url"] = patchPayload.ImageURL
+	}
+	if patchPayload.Description != "" {
+		updates["description"] = patchPayload.Description
 	}
 
-	if requestBook.ImageURL != "" {
-		updates["image"] = requestBook.ImageURL
-	}
+	// Bulk Replace BooksAuthors relations from payload.
+	if len(patchPayload.AuthorIds) > 0 {
 
-	if requestBook.Title != "" {
-		updates["title"] = requestBook.Title
-	}
+		// IDs already present
+		var currentIDs []uuid.UUID
+		for _, author := range book.Authors {
+			currentIDs = append(currentIDs, author.ID)
+		}
+		log.Println("currentIDs::", currentIDs)
 
-	if requestBook.Description != "" {
-		updates["description"] = requestBook.Description
+		// New IDs from payload
+		var insertIDs []uuid.UUID
+		for _, id := range patchPayload.AuthorIds {
+			insertIDs = append(insertIDs, id)
+		}
+		log.Println("insertIDs::", insertIDs)
+
+		// Delete the old BooksAuthors records.
+		for _, id := range currentIDs {
+			deleteQuery := &db.BooksAuthors{
+				BookISBN: query.ISBN,
+				AuthorID: id,
+			}
+			db.MySQL.Unscoped().Delete(deleteQuery)
+		}
+
+		// Insert new BooksAuthors records.
+		errBulkAuthors := db.BulkInsertBooksAuthors(insertIDs, query.ISBN)
+		if errBulkAuthors != nil {
+			HandleErrorResponse(w, errBulkAuthors, http.StatusBadRequest)
+			return
+		}
 	}
 
 	// Apply updates and record requestBook event

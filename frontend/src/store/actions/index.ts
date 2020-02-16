@@ -13,6 +13,10 @@ export interface IActionBase {
 	type: string
 }
 
+export interface IBooleanAction extends IActionBase {
+	payload: boolean
+}
+
 export interface IAuthorsAction extends IActionBase {
 	payload: AuthorsState
 }
@@ -43,4 +47,3 @@ export const booksSet = (payload: BookState): IBooksAction =>
 
 export const checkoutsSet = (payload: CheckoutsState): ICheckoutAction =>
 	action(actionTypes.CHECKOUTS_SET, payload);
-
