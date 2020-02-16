@@ -54,15 +54,15 @@ type Member struct {
 
 type Author struct {
 	Person
-	Books []Book `gorm:"many2many:books_authors;" json:"books,omitempty"`
+	Books []Book `gorm:"many2many:books_authors;" json:"books"`
 }
 
 type Book struct {
 	Base
 	BaseBook
 	ISBN    string   `gorm:"index;primary_key;type:char(13);" json:"isbn"`
-	Authors []Author `gorm:"many2many:books_authors;" json:"authors,omitempty"`
-	Copies  []Copy   `gorm:"foreignkey:ISBN;" json:"copies,omitempty"`
+	Authors []Author `gorm:"many2many:books_authors;" json:"authors"`
+	Copies  []Copy   `gorm:"foreignkey:ISBN;" json:"copies"`
 }
 
 // Copy of a Book
@@ -140,9 +140,9 @@ func CreateNewBookEvents(book Book, eventType BookEventType) {
 }
 
 // BulkInsertBooksAuthors - Batch inserts to BooksAuthors relation table.
-func BulkInsertBooksAuthors(authorIDs []uuid.UUID, isbn string) error {
+func BulkInsertBooksAuthors(author_ids []uuid.UUID, isbn string) error {
 	var booksAuthorsRecords []interface{}
-	for _, id := range authorIDs {
+	for _, id := range author_ids {
 		var rel = BooksAuthors{
 			BookISBN: isbn,
 			AuthorID: id,
