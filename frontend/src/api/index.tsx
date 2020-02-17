@@ -1,8 +1,32 @@
 /* =======================================================
- *					        Utility Functions
+ *					        Config/Types
 ======================================================= */
 
+export interface IBookPayloadBase {
+	isbn: string // Required by all book endpoints
+}
+
+export interface IPatchUpdateBookPayload extends IBookPayloadBase {
+	description?: string
+	author_ids?: string[]
+	image_url?: string
+	title?: string
+}
+
+export interface IPostNewBookPayload extends IBookPayloadBase {
+	description: string
+	author_ids: string[]
+	image_url: string
+	copies: number
+	title: string
+	isbn: string // Required by endpoint
+}
+
 export const baseUrl: string = "http://localhost:8000";
+
+/* =======================================================
+ *					        Utility Functions
+======================================================= */
 
 
 /* =======================================================
@@ -48,6 +72,49 @@ const getBookByISBN = (isbn: string) => {
 		.then(res => res.json());
 };
 
+const patchUpdateBookByISBN = (payload: IPatchUpdateBookPayload) => {
+	const { isbn } = payload;
+	return fetch(`${baseUrl}/books/${isbn}`, {
+		method: "PATCH",
+		body: JSON.stringify(payload)
+	});
+};
+
+const deleteBookByISBN = (isbn: string) => {
+	return fetch(`${baseUrl}/books/${isbn}`, {
+		method: "DELETE"
+	});
+};
+
+const postNewBook = (payload: IPostNewBookPayload) => {
+	return fetch(`${baseUrl}/books`, {
+		method: "POST",
+		body: JSON.stringify(payload)
+	});
+};
+
+
+/* 				  Checkout Handlers
+============================================== */
+
+const getAllCheckouts = () => {
+	return fetch(`${baseUrl}/checkouts`)
+		.then(res => res.json());
+};
+
+/* 				  Events Handlers
+============================================== */
+
+const getAllEvents = () => {
+	return fetch(`${baseUrl}/events`)
+		.then(res => res.json());
+};
+
+const getEventsByBookISBN = (isbn: string) => {
+	return fetch(`${baseUrl}/events/books/${isbn}`)
+		.then(res => res.json());
+};
+
 /* 				  Members Handlers
 ============================================== */
 
@@ -62,10 +129,6 @@ const getMemberByID = (id: string) => {
 };
 
 
-/* 				  Events Handlers
-============================================== */
-
-
 export interface IAPI {
 
 	// Util
@@ -78,7 +141,17 @@ export interface IAPI {
 
 	// Books
 	getAllBooks: typeof getAllBooks
+	postNewBook: typeof postNewBook
 	getBookByISBN: typeof getBookByISBN
+	deleteBookByISBN: typeof deleteBookByISBN
+	patchUpdateBookByISBN: typeof patchUpdateBookByISBN
+
+	// Checkouts
+	getAllCheckouts: typeof getAllCheckouts
+
+	// Events
+	getAllEvents: typeof getAllEvents
+	getEventsByBookISBN: typeof getEventsByBookISBN
 
 	// Members
 	getAllMembers: typeof getAllMembers
@@ -97,7 +170,17 @@ export const api: IAPI = {
 
 	// Books
 	getAllBooks,
+	postNewBook,
 	getBookByISBN,
+	deleteBookByISBN,
+	patchUpdateBookByISBN,
+
+	// Checkouts
+	getAllCheckouts,
+
+	// Events
+	getAllEvents,
+	getEventsByBookISBN,
 
 	// Members
 	getAllMembers,

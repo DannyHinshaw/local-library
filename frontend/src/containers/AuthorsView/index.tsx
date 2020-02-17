@@ -28,13 +28,6 @@ const AuthorsView: ComponentType<IAuthorsView> = (props: IAuthorsView): JSX.Elem
 			if (res.data.length) {
 				return handleAuthorData(res.data);
 			}
-
-			// Seed the database if there's no test data yet.
-			api.getSeedDatabase()
-				.then(console.log)
-				.catch(console.error);
-
-			console.log("res::", res);
 		}).catch(console.error);
 	}, []);
 

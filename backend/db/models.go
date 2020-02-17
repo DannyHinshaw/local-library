@@ -1,8 +1,10 @@
 package db
 
 import (
+	"github.com/jinzhu/gorm"
 	"github.com/satori/go.uuid"
 	"github.com/t-tiger/gorm-bulk-insert"
+	"log"
 	"time"
 )
 
@@ -52,15 +54,15 @@ type Member struct {
 
 type Author struct {
 	Person
-	Books []Book `gorm:"many2many:books_authors;" json:"books,omitempty"`
+	Books []Book `gorm:"many2many:books_authors;" json:"books"`
 }
 
 type Book struct {
 	Base
 	BaseBook
 	ISBN    string   `gorm:"index;primary_key;type:char(13);" json:"isbn"`
-	Authors []Author `gorm:"many2many:books_authors;" json:"authors,omitempty"`
-	Copies  []Copy   `gorm:"foreignkey:ISBN;" json:"copies,omitempty"`
+	Authors []Author `gorm:"many2many:books_authors;" json:"authors"`
+	Copies  []Copy   `gorm:"foreignkey:ISBN;" json:"copies"`
 }
 
 // Copy of a Book
@@ -91,30 +93,56 @@ type Checkout struct {
 }
 
 type Event struct {
+	Base
 	BaseBook
 	ID        uint          `gorm:"index;primary_key;" json:"id"`
 	ISBN      string        `gorm:"index;primary_key;" json:"isbn"`
+	BookID    uint          `gorm:"index;auto_increment:false" json:"book_id"`
 	EventType BookEventType `gorm:"index" json:"event_type"`
 }
 
 /* 			Helpers
 ============================= */
 
+// preloadBookRelations - Preload book query with Authors & Copies relations.
+func preloadBookRelations() *gorm.DB {
+	return MySQL.Preload("Authors").Preload("Copies")
+}
+
+// GetBookWithRelations - Retrieve a single book with all relations.
+func GetBookWithRelations(query *Book, book *Book) {
+	preloadBookRelations().Where(query).First(book)
+}
+
+// GetAllBooksWithRelations - Retrieve all books with relations.
+func GetAllBooksWithRelations(books *[]Book) {
+	preloadBookRelations().Find(books)
+}
+
 // CreateBookEvent - Create a new book update event record and inserts it to events table.
-func CreateNewBookEvent(book Book, eventType BookEventType) {
-	event := Event{
-		EventType: eventType,
-		BaseBook:  book.BaseBook,
-		ISBN:      book.ISBN,
+func CreateNewBookEvents(book Book, eventType BookEventType) {
+	var eventRecords []interface{}
+	for _, bookCopy := range book.Copies {
+		event := Event{
+			EventType: eventType,
+			BaseBook:  book.BaseBook,
+			BookID:    bookCopy.ID,
+			ISBN:      book.ISBN,
+		}
+		eventRecords = append(eventRecords, event)
 	}
 
-	MySQL.Create(&event)
+	errBulkBooksEvents := gormbulk.BulkInsert(MySQL, eventRecords, 3000)
+	if errBulkBooksEvents != nil {
+		log.Println(errBulkBooksEvents.Error())
+		return
+	}
 }
 
 // BulkInsertBooksAuthors - Batch inserts to BooksAuthors relation table.
-func BulkInsertBooksAuthors(authorIDs []uuid.UUID, isbn string) error {
+func BulkInsertBooksAuthors(author_ids []uuid.UUID, isbn string) error {
 	var booksAuthorsRecords []interface{}
-	for _, id := range authorIDs {
+	for _, id := range author_ids {
 		var rel = BooksAuthors{
 			BookISBN: isbn,
 			AuthorID: id,

@@ -15,16 +15,16 @@ func GetAllEvents(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// GetEventsByBookID - Retrieve all events for a book by it's BookID.
-func GetEventsByBookID(w http.ResponseWriter, r *http.Request) {
-	query, err := queryBookWithParamID(r)
+// GetEventsByBookISBN - Retrieve all events for a book by it's BookID.
+func GetEventsByBookISBN(w http.ResponseWriter, r *http.Request) {
+	query, err := queryBookWithParamISBN(r)
 	if err != nil {
 		HandleErrorResponse(w, err, http.StatusBadRequest)
 		return
 	}
 
 	var allEvents []db.Event
-	db.MySQL.Model(&db.Event{ISBN: query.ISBN}).Find(&allEvents)
+	db.MySQL.Where("isbn = ?", query.ISBN).Find(&allEvents)
 	json.NewEncoder(w).Encode(EventsResponse{
 		Data: allEvents,
 	})

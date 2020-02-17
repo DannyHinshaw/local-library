@@ -185,6 +185,7 @@ func GetSeedDatabase(w http.ResponseWriter, r *http.Request) {
 	var checkoutRecords []interface{}
 	var memberRecords []interface{}
 	var authorRecords []interface{}
+	var eventRecords []interface{}
 	var bookRecords []interface{}
 	var copyRecords []interface{}
 
@@ -248,8 +249,8 @@ func GetSeedDatabase(w http.ResponseWriter, r *http.Request) {
 				}
 
 				newBook := db.Book{
-					Base:   base,
-					ISBN:   book.ISBN,
+					Base: base,
+					ISBN: book.ISBN,
 					BaseBook: db.BaseBook{
 						Description: book.Description,
 						Title:       book.Title,
@@ -257,14 +258,14 @@ func GetSeedDatabase(w http.ResponseWriter, r *http.Request) {
 					},
 				}
 
-				newCopy := &db.Copy{
+				newCopy := db.Copy{
 					ISBN: book.ISBN,
 				}
 
 				bookRecords = append(bookRecords, newBook)
 				copyRecords = append(copyRecords, newCopy)
 				authorRecords = append(authorRecords, newAuthor)
-				booksAuthorsRecords = append(booksAuthorsRecords, &db.BooksAuthors{
+				booksAuthorsRecords = append(booksAuthorsRecords, db.BooksAuthors{
 					BookISBN: book.ISBN,
 					AuthorID: author.ID,
 				})
@@ -300,6 +301,27 @@ func GetSeedDatabase(w http.ResponseWriter, r *http.Request) {
 	errBulkBooksAuthors := gormbulk.BulkInsert(db.MySQL, booksAuthorsRecords, 3000)
 	if errBulkBooksAuthors != nil {
 		log.Println(errBulkBooksAuthors.Error())
+		return
+	}
+
+	// CREATE events for all books just created.
+	var allNewBooks []db.Book
+	db.MySQL.Preload("Copies").Model(&db.Book{}).Find(&allNewBooks)
+	for _, book := range allNewBooks {
+		for _, bookCopy := range book.Copies {
+			newEvent := &db.Event{
+				BaseBook:  book.BaseBook,
+				BookID:    bookCopy.ID,
+				ISBN:      book.ISBN,
+				EventType: db.CREATE,
+			}
+
+			eventRecords = append(eventRecords, newEvent)
+		}
+	}
+	errBulkBooksEvents := gormbulk.BulkInsert(db.MySQL, eventRecords, 3000)
+	if errBulkBooksEvents != nil {
+		log.Println(errBulkBooksEvents.Error())
 		return
 	}
 

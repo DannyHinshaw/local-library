@@ -20,9 +20,7 @@ Assumptions made from the list of requirements. Most are to save time as this is
 
 * It is assumed this application is for only one Library (no other branches or locations etc).
 * It is assumed that all books have an ISBN.
-* It is assumed that all books have only one author.
 * It is assumed this solution can be for small scale (no need for caching layers, multiple services, workers or any other over-architecting).
-* There is no user auth (not listed in requirements), this would need implemented to truly check books in and out.
 
 ### Other Notes
 
@@ -34,3 +32,5 @@ Assumptions made from the list of requirements. Most are to save time as this is
 ```bash
 docker-compose up --build
 ```
+
+Once all services are available, visit `http://localhost:3000/` in your favorite browser.
