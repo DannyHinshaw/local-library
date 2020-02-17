@@ -164,6 +164,7 @@ const NavDrawer: ComponentType = (): JSX.Element => {
 					{/* Books */}
 					<ListItem
 						onClick={handleMenuItemClick(1)}
+						selected={view === AppView.BOOKS}
 						style={{ minWidth: 46 }}
 						button={true}
 						key="Books">
@@ -176,6 +177,7 @@ const NavDrawer: ComponentType = (): JSX.Element => {
 					{/* Authors */}
 					<ListItem
 						onClick={handleMenuItemClick(2)}
+						selected={view === AppView.AUTHORS}
 						style={{ minWidth: 46 }}
 						button={true}
 						key="Authors">
@@ -188,6 +190,7 @@ const NavDrawer: ComponentType = (): JSX.Element => {
 					{/* Members */}
 					<ListItem
 						onClick={handleMenuItemClick(3)}
+						selected={view === AppView.MEMBERS}
 						style={{ minWidth: 46 }}
 						button={true}
 						key="Members">
