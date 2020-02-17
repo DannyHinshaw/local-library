@@ -1,11 +1,13 @@
 import React, { ComponentType, useEffect } from "react";
 import { connect } from "react-redux";
 import { api } from "../../api";
-import { authorsSet } from "../../store/actions";
+import { authorsSet, membersSet } from "../../store/actions";
 import { AuthorsState } from "../../store/reducers/authorsReducer";
+import { MembersState } from "../../store/reducers/membersReducer";
 
 
 export interface IBooksView {
+	membersSet: typeof membersSet
 	authorsSet: typeof authorsSet
 	authors: AuthorsState
 }
@@ -18,8 +20,8 @@ export interface IBooksView {
  */
 const MembersView: ComponentType<IBooksView> = (props: IBooksView): JSX.Element => {
 	const handleAuthorData = (data: any[]) => {
-		const authors = data as AuthorsState;
-		props.authorsSet(authors);
+		const members = data as MembersState;
+		props.membersSet(members);
 	};
 
 	useEffect(() => {
@@ -46,5 +48,6 @@ const MembersView: ComponentType<IBooksView> = (props: IBooksView): JSX.Element 
 
 const mapStateToProps = ({ authors }) => ({ authors });
 export default connect(mapStateToProps, {
-	authorsSet
+	authorsSet,
+	membersSet
 })(MembersView);

@@ -48,7 +48,7 @@ export interface IPerson extends IBase {
 	id: string
 }
 
-export interface IMembers extends IPerson {
+export interface IMember extends IPerson {
 	checkouts: ICheckout[]
 }
 

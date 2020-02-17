@@ -110,7 +110,9 @@ const NavDrawer: ComponentType = (): JSX.Element => {
 			case AppView.BOOKS:
 				return <BooksView />;
 			case AppView.AUTHORS:
-				return <AuthorsView />;
+				// FIXME:
+				// return <AuthorsView />;
+				return <MembersView />;
 			case AppView.MEMBERS:
 				return <MembersView />;
 			default:
@@ -201,6 +203,8 @@ const NavDrawer: ComponentType = (): JSX.Element => {
 					</ListItem>
 				</List>
 			</Drawer>
+
+			{/* Views Render Here */}
 			<main
 				className={clsx(classes.content, {
 					[classes.contentShift]: open
