@@ -72,9 +72,11 @@ const BookEditDialog: ComponentType<IBookEditDialog> = (props: IBookEditDialog):
 				onClose={handleClose}
 				style={{ minWidth: 500 }}
 				open={props.open}>
+
 				<DialogTitle id="form-dialog-title">
 					Edit Book
 				</DialogTitle>
+
 				<DialogContent>
 					<form onSubmit={stopFormEvent}>
 						<div>

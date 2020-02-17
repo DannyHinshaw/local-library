@@ -1,8 +1,11 @@
+import { Button } from "@material-ui/core";
+import AddIcon from "@material-ui/icons/Add";
 import React, { ComponentType, useEffect, useState } from "react";
 import Masonry from "react-masonry-css";
 import { connect } from "react-redux";
 import { api } from "../../api";
 import BookCard from "../../components/BookCard";
+import BookCreateDialog from "../../components/BookCreateDialog";
 import LoaderCircle from "../../components/LoaderCircle";
 import { authorsSet, booksSet, checkoutsSet } from "../../store/actions";
 import { AuthorsState } from "../../store/reducers/authorsReducer";
@@ -35,7 +38,13 @@ export interface IBooksView {
  */
 const BooksView: ComponentType<IBooksView> = (props: IBooksView): JSX.Element => {
 	const [loading, setLoading] = useState(true);
+	const [refresh, setRefresh] = useState(false);
+	const [openCreateDialog, setOpenCreateDialog] = useState(false);
+
 	const stopLoader = () => setLoading(false);
+
+	const handleClickCreateDialog = () =>
+		setOpenCreateDialog(!openCreateDialog);
 
 	const handleCheckoutData = (data: any[]) => {
 		const checkouts = data as CheckoutsState;
@@ -134,12 +143,32 @@ const BooksView: ComponentType<IBooksView> = (props: IBooksView): JSX.Element =>
 
 	return loading
 		? <LoaderCircle size={100} />
-		: <Masonry
-			className="my-masonry-grid"
-			breakpointCols={breakpointColumnsObj}
-			columnClassName="my-masonry-grid_column">
-			{renderCards()}
-		</Masonry>;
+		: (
+			<>
+				<div id="bookControlsContainer">
+					<Button
+						onClick={handleClickCreateDialog}
+						startIcon={<AddIcon />}
+						variant="contained"
+						color="secondary"
+						size="large"
+					>
+						Add New Book
+					</Button>
+					<BookCreateDialog
+						setRefresh={setRefresh}
+						setOpen={setOpenCreateDialog}
+						open={openCreateDialog} />
+				</div>
+
+				<Masonry
+					className="my-masonry-grid"
+					breakpointCols={breakpointColumnsObj}
+					columnClassName="my-masonry-grid_column">
+					{renderCards()}
+				</Masonry>
+			</>
+		);
 };
 
 const mapStateToProps = ({ books, checkouts }) =>

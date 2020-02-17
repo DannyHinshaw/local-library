@@ -141,8 +141,9 @@ export interface IAPI {
 
 	// Books
 	getAllBooks: typeof getAllBooks
-	getBookByISBN: typeof getBookByISBN
 	postNewBook: typeof postNewBook
+	getBookByISBN: typeof getBookByISBN
+	deleteBookByISBN: typeof deleteBookByISBN
 	patchUpdateBookByISBN: typeof patchUpdateBookByISBN
 
 	// Checkouts
@@ -169,8 +170,9 @@ export const api: IAPI = {
 
 	// Books
 	getAllBooks,
-	getBookByISBN,
 	postNewBook,
+	getBookByISBN,
+	deleteBookByISBN,
 	patchUpdateBookByISBN,
 
 	// Checkouts

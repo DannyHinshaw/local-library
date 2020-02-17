@@ -38,6 +38,7 @@ export interface IButtonLoaderProps {
 	handleSubmit: () => Promise<any>
 	closeDialog: () => void
 	setError: StateSetter<any>
+	text?: string
 }
 
 /**
@@ -60,8 +61,8 @@ const SubmitButton: ComponentType<IButtonLoaderProps> = (props: IButtonLoaderPro
 	const handleButtonClick = () => {
 		setLoading(true);
 		props.handleSubmit().then((res) => {
-			if (res.status > 204) {
-				props.setError(genericErrorMsg);
+			if (res.error || res.status > 204) {
+				props.setError(res.error || genericErrorMsg);
 				console.log("ERROR::", res);
 				setLoading(false);
 				return res;
@@ -92,7 +93,7 @@ const SubmitButton: ComponentType<IButtonLoaderProps> = (props: IButtonLoaderPro
 					onClick={handleButtonClick}
 					disabled={loading}
 				>
-					Submit
+					{props.text ? props.text : "Submit"}
 				</Button>
 				{loading && <CircularProgress size={24} className={classes.buttonProgress} />}
 			</div>

@@ -36,7 +36,10 @@ export interface IAuthorSelectProps {
  * @constructor
  */
 const AuthorSelect: ComponentType<IAuthorSelectProps> = (props: IAuthorSelectProps): JSX.Element => {
-	const authorsList = props.authors ? props.authors : [];
+	const authorsList = (props.authors ? props.authors : []).sort((a, b) => {
+		return a.first_name.localeCompare(b.first_name);
+	});
+
 	const handleChange = (event: ChangeEvent<{ value: unknown }>) => {
 		const ids = event.target.value as string[];
 		console.log("handleChange::ids", ids);
@@ -69,15 +72,14 @@ const AuthorSelect: ComponentType<IAuthorSelectProps> = (props: IAuthorSelectPro
 				Authors
 			</InputLabel>
 			<Select
-				labelId="mutiple-checkbox-label"
-				id="mutiple-checkbox"
 				multiple={true}
 				input={<Input />}
+				MenuProps={MenuProps}
 				value={props.authorIDs}
 				onChange={handleChange}
 				renderValue={renderValue}
-				MenuProps={MenuProps}
-			>
+				labelId="mutiple-checkbox-label"
+				id="mutiple-checkbox">
 				{authorsList.map((author, i) => {
 					return (
 						<MenuItem key={author.id} value={author.id}>

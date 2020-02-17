@@ -18,6 +18,7 @@ import { booksSet } from "../../store/actions";
 import { BookState } from "../../store/reducers/booksReducer";
 import { IBook, OrNull } from "../../types";
 import { getAuthorName } from "../../util/data";
+import BookDeleteDialog from "../BookDeleteDialog";
 import BookEditDialog from "../BookEditDialog";
 import BookHistoryDialog from "../BookHistoryDialog";
 
@@ -155,11 +156,17 @@ const BookCard: ComponentType<IBookCardProps> = (props: IBookCardProps): JSX.Ele
 					</>
 				</Tooltip>
 
-				{/* TODO: Delete popover confirmation */}
 				<Tooltip title="Delete">
-					<IconButton onClick={handleClickDelete}>
-						<DeleteForeverIcon />
-					</IconButton>
+					<>
+						<IconButton onClick={handleClickDelete}>
+							<DeleteForeverIcon />
+						</IconButton>
+						<BookDeleteDialog
+							setRefresh={setRefresh}
+							setOpen={setOpenDeleteDialog}
+							open={openDeleteDialog}
+							book={props.book} />
+					</>
 				</Tooltip>
 			</CardActions>
 		</Card>

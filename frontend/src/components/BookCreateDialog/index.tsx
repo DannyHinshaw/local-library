@@ -7,7 +7,7 @@ import TextField from "@material-ui/core/TextField";
 import Typography from "@material-ui/core/Typography";
 import React, { ChangeEvent, ComponentType, useState } from "react";
 import { api, IPostNewBookPayload } from "../../api";
-import { IBook, OrNull, StateSetter } from "../../types";
+import { OrNull, StateSetter } from "../../types";
 import AuthorSelect from "../AuthorSelect";
 import SubmitButton from "../SubmitButton";
 
@@ -16,7 +16,6 @@ export interface IBookCreateDialog {
 	setRefresh: StateSetter<boolean>
 	setOpen: StateSetter<boolean>
 	open: boolean
-	book: IBook
 }
 
 /**
@@ -32,16 +31,19 @@ const BookCreateDialog: ComponentType<IBookCreateDialog> = (props: IBookCreateDi
 	const [error, setError] = useState(null as OrNull<string>);
 
 	// Form Inputs Values
-	const numCopies = props.book.copies.length;
-	const initAuthorIDs = props.book.authors.map(a => a.id);
-	const [copies, setCopies] = useState(numCopies);
-	const [title, setTitle] = useState(props.book.title);
+	const [copies, setCopies] = useState(1);
+	const [isbn, setISBN] = useState("");
+	const [title, setTitle] = useState("");
 	const [imageURL, setImageURL] = useState<string>("");
-	const [authorIDs, setAuthorIDs] = useState<string[]>(initAuthorIDs);
-	const [description, setDescription] = useState(props.book.description);
+	const [authorIDs, setAuthorIDs] = useState<string[]>([]);
+	const [description, setDescription] = useState("");
 
+	const handleChangeISBN = (event: ChangeEvent<HTMLInputElement>) =>
+		setISBN(event.target.value);
 	const handleChangeTitle = (event: ChangeEvent<HTMLInputElement>) =>
 		setTitle(event.target.value);
+	const handleChangeImageURL = (event: ChangeEvent<HTMLInputElement>) =>
+		setImageURL(event.target.value);
 	const handleChangeCopies = (event: ChangeEvent<HTMLInputElement>) =>
 		setCopies(Number(event.target.value));
 	const handleChangeDescription = (event: ChangeEvent<HTMLTextAreaElement>) =>
@@ -54,19 +56,35 @@ const BookCreateDialog: ComponentType<IBookCreateDialog> = (props: IBookCreateDi
 		e.preventDefault();
 
 	const handleSubmit = () => {
+		const sanitizedISBN = isbn.replace(/-/g, "");
+		const isValidISBN13 = sanitizedISBN.length > 9 && sanitizedISBN.length < 14;
+		if (!isValidISBN13) {
+			const errMsg = "ISBN is required, valid ISBN's are between 10 and 13 digits";
+			return Promise.resolve({ error: errMsg });
+		}
+
+		if (!title) {
+			const errMsg = "Book title is required.";
+			return Promise.resolve({ error: errMsg });
+		}
+
+		setError("");
 		const payload: IPostNewBookPayload = {
-			isbn: props.book.isbn,
+			copies: copies || 1,
 			author_ids: authorIDs,
 			image_url: imageURL,
 			description,
-			copies,
-			title
+			title,
+			isbn
 		};
 
 		setLoading(true);
 		return api.postNewBook(payload).then(res => {
 			props.setRefresh(true);
 			return res;
+		}).catch(e => {
+			setError(e);
+			console.error(e);
 		});
 	};
 
@@ -78,21 +96,48 @@ const BookCreateDialog: ComponentType<IBookCreateDialog> = (props: IBookCreateDi
 				onClose={handleClose}
 				style={{ minWidth: 500 }}
 				open={props.open}>
+
 				<DialogTitle id="form-dialog-title">
-					Edit Book
+					Create New Book
 				</DialogTitle>
+
 				<DialogContent>
 					<form onSubmit={stopFormEvent}>
+						<div>
+							<TextField
+								id="isbn"
+								label="ISBN"
+								value={isbn}
+								required={true}
+								fullWidth={true}
+								onChange={handleChangeISBN}
+							/>
+						</div>
+						<br />
+
 						<div>
 							<TextField
 								id="title"
 								label="Title"
 								value={title}
+								required={true}
 								fullWidth={true}
 								onChange={handleChangeTitle}
 							/>
 						</div>
 						<br />
+
+						<div>
+							<TextField
+								id="imageURL"
+								label="Image URL"
+								value={imageURL}
+								fullWidth={true}
+								onChange={handleChangeImageURL}
+							/>
+						</div>
+						<br />
+
 						<div>
 							<AuthorSelect
 								setAuthorIDs={setAuthorIDs}
@@ -100,6 +145,7 @@ const BookCreateDialog: ComponentType<IBookCreateDialog> = (props: IBookCreateDi
 							/>
 						</div>
 						<br />
+
 						<div>
 							<TextField
 								id="copies"
@@ -110,6 +156,7 @@ const BookCreateDialog: ComponentType<IBookCreateDialog> = (props: IBookCreateDi
 							/>
 						</div>
 						<br />
+
 						<div>
 							<Typography>
 								Description:
@@ -121,9 +168,21 @@ const BookCreateDialog: ComponentType<IBookCreateDialog> = (props: IBookCreateDi
 								placeholder="Description"
 								value={description}
 								onChange={handleChangeDescription}
+								style={{ width: "100%" }}
 							/>
 						</div>
 						<br />
+
+						{error && (
+							<>
+								<br />
+								<div style={{ textAlign: "center" }}>
+									<Typography style={{ margin: "0 auto", width: "75%" }} color="error">
+										{error}
+									</Typography>
+								</div>
+							</>)}
+
 						<DialogActions>
 							<Button onClick={handleClose} color="primary">
 								Cancel
