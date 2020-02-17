@@ -5,17 +5,28 @@ import (
 	"errors"
 	"github.com/gorilla/mux"
 	uuid "github.com/satori/go.uuid"
+	gormbulk "github.com/t-tiger/gorm-bulk-insert"
+	"log"
 	"main/db"
 	"net/http"
 	"time"
 )
 
-type CheckoutsResponse struct {
-	Data []db.Checkout `json:"data"`
+type PostCheckouts struct {
+	MemberID uuid.UUID `json:"member_id"`
+	BookIDs  []uint    `json:"book_ids"`
 }
 
 type CheckoutResponse struct {
 	Data db.Checkout `json:"data"`
+}
+
+type CheckoutsResponse struct {
+	Data []db.Checkout `json:"data"`
+}
+
+type CheckoutsResponseInterface struct {
+	Data []interface{} `json:"data"`
 }
 
 type CheckoutQueryPayload struct {
@@ -89,20 +100,33 @@ func GetCheckoutsByMemberID(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// PostNewCheckout - Checkout a book for a member.
-func PostNewCheckout(w http.ResponseWriter, r *http.Request) {
-	var checkout db.Checkout
+// PostNewCheckouts - Checkout a multiple books for a member.
+func PostNewCheckouts(w http.ResponseWriter, r *http.Request) {
+	var postCheckouts PostCheckouts
 	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&checkout)
+	err := decoder.Decode(&postCheckouts)
 	if err != nil {
 		HandleErrorResponse(w, err, http.StatusBadRequest)
 		return
 	}
 
-	checkout.CheckedOut = time.Now()
-	db.MySQL.Create(&checkout)
-	json.NewEncoder(w).Encode(CheckoutResponse{
-		Data: checkout,
+	var checkouts []interface{}
+	for _, bookId := range postCheckouts.BookIDs {
+		newCheckout := db.Checkout{
+			BookID:     bookId,
+			MemberID:   postCheckouts.MemberID,
+			CheckedOut: time.Now(),
+		}
+		checkouts = append(checkouts, newCheckout)
+	}
+
+	errBulkCheckouts := gormbulk.BulkInsert(db.MySQL, checkouts, 3000)
+	if errBulkCheckouts != nil {
+		log.Println(errBulkCheckouts.Error())
+		return
+	}
+	json.NewEncoder(w).Encode(CheckoutsResponseInterface{
+		Data: checkouts,
 	})
 }
 

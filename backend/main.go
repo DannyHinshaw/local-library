@@ -78,7 +78,7 @@ func registerRoutes() *mux.Router {
 
 	// Checkouts
 	router.
-		HandleFunc("/checkouts", handlers.PostNewCheckout).
+		HandleFunc("/checkouts", handlers.PostNewCheckouts).
 		Methods("POST")
 	router.
 		HandleFunc("/checkouts", handlers.GetAllCheckouts).
