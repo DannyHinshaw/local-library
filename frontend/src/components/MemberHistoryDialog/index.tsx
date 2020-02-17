@@ -6,25 +6,27 @@ import DialogContent from "@material-ui/core/DialogContent";
 import DialogTitle from "@material-ui/core/DialogTitle";
 import React, { ComponentType, useEffect, useState } from "react";
 import { api } from "../../api";
-import { IBook, IEvent, OrNull, StateSetter } from "../../types";
-import HistoryList from "../HistoryList";
+import { ICheckout, IMember, OrNull, StateSetter } from "../../types";
+import { getPersonName } from "../../util/data";
+import CheckoutsList from "../CheckoutsList";
 
 
-interface IBookHistoryDialogProps {
+interface IMemberHistoryDialogProps {
 	setOpen: StateSetter<boolean>
+	member: IMember
 	open: boolean
-	book: IBook
 }
 
 /**
  * Dialog to display book event history.
- * @param {IBookHistoryDialogProps} props
+ * @param {IMemberHistoryDialogProps} props
  * @returns {JSX.Element}
  * @constructor
  */
-const BookHistoryDialog: ComponentType<IBookHistoryDialogProps> = (props: IBookHistoryDialogProps): JSX.Element => {
+const MemberHistoryDialog: ComponentType<IMemberHistoryDialogProps> = (props: IMemberHistoryDialogProps): JSX.Element => {
 	const { open } = props;
-	const [events, setEvents] = useState([] as IEvent[]);
+	const memberName = getPersonName(props.member);
+	const [checkouts, setCheckouts] = useState([] as ICheckout[]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null as OrNull<string>);
 
@@ -34,10 +36,10 @@ const BookHistoryDialog: ComponentType<IBookHistoryDialogProps> = (props: IBookH
 	const descriptionElementRef = React.useRef<HTMLElement>(null);
 	useEffect(() => {
 		if (open) {
-			if (!events.length) {
+			if (!checkouts.length) {
 				setLoading(true);
-				api.getEventsByBookISBN(props.book.isbn).then(res => {
-					setEvents(res.data);
+				api.getCheckoutsByMemberID(props.member.id).then(res => {
+					setCheckouts(res.data);
 					setLoading(false);
 					return;
 				}).catch(err => {
@@ -64,7 +66,11 @@ const BookHistoryDialog: ComponentType<IBookHistoryDialogProps> = (props: IBookH
 				aria-describedby="scroll-dialog-description"
 			>
 				<DialogTitle id="scroll-dialog-title">
-					Edits for ISBN: {props.book.isbn}
+					Checkout History For: {memberName}
+					<br />
+					<span style={{ fontSize: 15, color: "grey" }}>
+						Member ID: {props.member.id}
+					</span>
 				</DialogTitle>
 
 				<DialogContent dividers={true} style={{ padding: 0 }}>
@@ -75,15 +81,12 @@ const BookHistoryDialog: ComponentType<IBookHistoryDialogProps> = (props: IBookH
 						)
 						: error
 							? "Oops, something went wrong :/"
-							: <HistoryList events={events} />}
+							: <CheckoutsList checkouts={checkouts} />}
 				</DialogContent>
 
 				<DialogActions>
 					<Button onClick={handleClose} color="primary">
 						Close
-					</Button>
-					<Button onClick={handleClose} color="primary">
-						Download
 					</Button>
 				</DialogActions>
 			</Dialog>
@@ -91,4 +94,4 @@ const BookHistoryDialog: ComponentType<IBookHistoryDialogProps> = (props: IBookH
 	);
 };
 
-export default BookHistoryDialog;
+export default MemberHistoryDialog;

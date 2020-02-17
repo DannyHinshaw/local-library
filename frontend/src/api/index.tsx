@@ -102,6 +102,11 @@ const getAllCheckouts = () => {
 		.then(res => res.json());
 };
 
+const getCheckoutsByMemberID = (id: string) => {
+	return fetch(`${baseUrl}/checkouts/${id}`)
+		.then(res => res.json());
+};
+
 /* 				  Events Handlers
 ============================================== */
 
@@ -148,6 +153,7 @@ export interface IAPI {
 
 	// Checkouts
 	getAllCheckouts: typeof getAllCheckouts
+	getCheckoutsByMemberID: typeof getCheckoutsByMemberID
 
 	// Events
 	getAllEvents: typeof getAllEvents
@@ -177,6 +183,7 @@ export const api: IAPI = {
 
 	// Checkouts
 	getAllCheckouts,
+	getCheckoutsByMemberID,
 
 	// Events
 	getAllEvents,

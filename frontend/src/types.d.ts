@@ -50,6 +50,7 @@ export interface IPerson extends IBase {
 
 export interface IMember extends IPerson {
 	checkouts: ICheckout[]
+	image_url: string
 }
 
 export interface IAuthor extends IPerson {

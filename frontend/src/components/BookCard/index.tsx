@@ -17,7 +17,7 @@ import { store } from "../../store";
 import { booksSet } from "../../store/actions";
 import { BookState } from "../../store/reducers/booksReducer";
 import { IBook, OrNull } from "../../types";
-import { getAuthorName } from "../../util/data";
+import { getPersonName } from "../../util/data";
 import BookDeleteDialog from "../BookDeleteDialog";
 import BookEditDialog from "../BookEditDialog";
 import BookHistoryDialog from "../BookHistoryDialog";
@@ -111,7 +111,7 @@ const BookCard: ComponentType<IBookCardProps> = (props: IBookCardProps): JSX.Ele
 					{props.book.authors.map((a, i) => {
 						return (
 							<Typography key={i}>
-								{getAuthorName(a)}
+								{getPersonName(a)}
 							</Typography>
 						);
 					})}

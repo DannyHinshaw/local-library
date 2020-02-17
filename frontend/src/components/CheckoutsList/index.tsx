@@ -1,0 +1,102 @@
+import Divider from "@material-ui/core/Divider";
+import Grid from "@material-ui/core/Grid";
+import IconButton from "@material-ui/core/IconButton";
+import List from "@material-ui/core/List";
+import ListItem from "@material-ui/core/ListItem";
+import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
+import Tooltip from "@material-ui/core/Tooltip";
+import AssignmentReturnIcon from "@material-ui/icons/AssignmentReturn";
+import React, { ComponentType } from "react";
+import { ICheckout } from "../../types";
+import "./styles.scss";
+
+const useStyles = makeStyles((theme: Theme) =>
+	createStyles({
+		root: {
+			flexGrow: 1,
+			maxWidth: 752
+		},
+		demo: {
+			backgroundColor: theme.palette.background.paper
+		},
+		title: {
+			margin: theme.spacing(4, 0, 2)
+		}
+	})
+);
+
+export interface ICheckoutsListProps {
+	checkouts: ICheckout[]
+}
+
+/**
+ * Material list component for book events/history.
+ * @param {ICheckoutsListProps} props
+ * @returns {JSX.Element}
+ * @constructor
+ */
+const CheckoutsList: ComponentType<ICheckoutsListProps> = (props: ICheckoutsListProps): JSX.Element => {
+	const classes = useStyles();
+	const numEvents = props.checkouts.length;
+
+	const handleClickReturn = () => {
+		console.log("TODO:: RETURN BOOK TO API");
+	};
+
+	return (
+		<div className={classes.root}>
+			<Grid container spacing={2}>
+				<Grid item xs={12} md={6}>
+					<div className={classes.demo}>
+						<List dense={true}>
+
+							{/* Member Checkouts List */}
+							{!props.checkouts.length
+								? <div style={{ textAlign: "center" }}>No checkout history yet!</div>
+								: props.checkouts.reverse().map((checkout, i) => {
+									const checkedOutAt = new Date(checkout.checked_out).toLocaleString();
+									const returnedAt = new Date(checkout.returned).toLocaleString();
+									return (
+										<ListItem key={i}>
+											<div id="gridParent">
+
+												{/* Column Headings */}
+												<strong>Book ID:</strong>
+												<strong>Checked Out:</strong>
+												<strong>Returned On:</strong>
+
+												{/* Values */}
+												<div style={{ textAlign: "center" }}>
+													{checkout.book_id}
+												</div>
+												<div>
+													{checkedOutAt}
+												</div>
+												<div>
+													{checkout.returned
+														? returnedAt
+														: (
+															<Tooltip title="Return now">
+																<IconButton
+																	onClick={handleClickReturn}
+																	style={{ padding: 0, margin: "0 0 0 25%", textAlign: "center" }}>
+																	<AssignmentReturnIcon />
+																</IconButton>
+															</Tooltip>
+														)}
+												</div>
+
+												{(i !== numEvents - 1) && <Divider style={{ margin: "1rem 0" }} />}
+											</div>
+										</ListItem>
+									);
+								})}
+						</List>
+					</div>
+				</Grid>
+			</Grid>
+		</div>
+	);
+};
+
+export default CheckoutsList;

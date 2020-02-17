@@ -9,7 +9,7 @@ import React, { ChangeEvent, ComponentType } from "react";
 import { connect } from "react-redux";
 import { AuthorsState } from "../../store/reducers/authorsReducer";
 import { IAuthor, OrUndefined, StateSetter } from "../../types";
-import { getAuthorName } from "../../util/data";
+import { getPersonName } from "../../util/data";
 
 
 const ITEM_HEIGHT = 48;
@@ -56,7 +56,7 @@ const AuthorSelect: ComponentType<IAuthorSelectProps> = (props: IAuthorSelectPro
 		const authorNames = authorIDs.reduce((base: string[], id: string) => {
 			const author: OrUndefined<IAuthor> = authorsList.find(a => a.id === id);
 			if (author) {
-				const authorName: string = getAuthorName(author);
+				const authorName: string = getPersonName(author);
 				return base.concat(authorName);
 			}
 
@@ -84,7 +84,7 @@ const AuthorSelect: ComponentType<IAuthorSelectProps> = (props: IAuthorSelectPro
 					return (
 						<MenuItem key={author.id} value={author.id}>
 							<Checkbox checked={props.authorIDs.includes(author.id)} />
-							<ListItemText primary={getAuthorName(author)} />
+							<ListItemText primary={getPersonName(author)} />
 						</MenuItem>
 					);
 				})}

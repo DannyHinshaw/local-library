@@ -7,20 +7,20 @@ import IconButton from "@material-ui/core/IconButton";
 import { makeStyles } from "@material-ui/core/styles";
 import Tooltip from "@material-ui/core/Tooltip";
 import Typography from "@material-ui/core/Typography";
-import DeleteForeverIcon from "@material-ui/icons/DeleteForeverOutlined";
-import EditOutlinedIcon from "@material-ui/icons/EditOutlined";
+import ShoppingCart from "@material-ui/icons/AddShoppingCart";
 import History from "@material-ui/icons/HistoryOutlined";
 import React, { ComponentType, useEffect, useState } from "react";
 import ReactImageFallback from "react-image-fallback";
 import { api } from "../../api";
 import { store } from "../../store";
-import { booksSet } from "../../store/actions";
+import { booksSet, membersSet } from "../../store/actions";
 import { BookState } from "../../store/reducers/booksReducer";
+import { CheckoutsState } from "../../store/reducers/checkoutsReducer";
+import { MembersState } from "../../store/reducers/membersReducer";
 import { IMember, OrNull } from "../../types";
-import { getAuthorName } from "../../util/data";
-import BookDeleteDialog from "../BookDeleteDialog";
-import BookEditDialog from "../BookEditDialog";
-import BookHistoryDialog from "../BookHistoryDialog";
+import { getPersonName } from "../../util/data";
+import MemberCheckoutDialog from "../MemberCheckoutDialog";
+import MemberHistoryDialog from "../MemberHistoryDialog";
 
 
 const useStyles = makeStyles({
@@ -36,32 +36,45 @@ const useStyles = makeStyles({
 	}
 });
 
-export interface IBookCardProps {
-	copiesAvailable: number
-	totalCopies: number
+export interface IMemberCardProps {
+	checkouts: CheckoutsState
+	books: BookState
 	member: IMember
 }
 
-const defaultImageURL = "images/placeholder-book-cover-default.png";
+const defaultImageURL = "images/avatar-placeholder.png";
 const initialImageURL = "images/image-loading.gif";
 
 /**
- * Information display card for a book.
- * @param {IBookCardProps} props
+ * Information display card for a library member.
+ * @param {IMemberCardProps} props
  * @returns {JSX.Element}
  * @constructor
  */
-const MemberCard: ComponentType<IBookCardProps> = (props: IBookCardProps): JSX.Element => {
+const MemberCard: ComponentType<IMemberCardProps> = (props: IMemberCardProps): JSX.Element => {
 	const classes = useStyles();
+	const [openCheckoutDialog, setOpenCheckoutDialog] = useState(false);
 	const [openHistoryDialog, setOpenHistoryDialog] = useState(false);
-	const [openEditDialog, setOpenEditDialog] = useState(false);
 	const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+	const [openEditDialog, setOpenEditDialog] = useState(false);
 	const [refresh, setRefresh] = useState(false);
+
+	const handleMembersData = (data: any[]) => {
+		const members = data as MembersState;
+		return store.dispatch(membersSet(members));
+	};
 
 	const handleBookData = (data: any[]) => {
 		const books = data as BookState;
 		return store.dispatch(booksSet(books));
 	};
+
+	// Retrieve and store books.
+	const fetchMembers = () => api.getAllMembers().then((res): OrNull<any> => {
+		return res.data.length
+			? handleBookData(res.data)
+			: null;
+	});
 
 	// Retrieve and store books.
 	const fetchBooks = () => api.getAllBooks().then((res): OrNull<any> => {
@@ -73,7 +86,10 @@ const MemberCard: ComponentType<IBookCardProps> = (props: IBookCardProps): JSX.E
 	// List to refresh books data
 	useEffect(() => {
 		if (refresh) {
-			fetchBooks().then(res => {
+			Promise.resolve([
+				fetchMembers(),
+				fetchBooks()
+			]).then(res => {
 				console.log("done refreshing");
 				setRefresh(false);
 			});
@@ -82,6 +98,9 @@ const MemberCard: ComponentType<IBookCardProps> = (props: IBookCardProps): JSX.E
 
 	const handleClickHistory = () =>
 		setOpenHistoryDialog(!openHistoryDialog);
+
+	const handleClickCheckout = () =>
+		setOpenCheckoutDialog(!openCheckoutDialog);
 
 	const handleClickEdit = () =>
 		setOpenEditDialog(!openEditDialog);
@@ -94,7 +113,7 @@ const MemberCard: ComponentType<IBookCardProps> = (props: IBookCardProps): JSX.E
 			<CardActionArea>
 				<CardMedia className={classes.media}>
 					<ReactImageFallback
-						src={props.book.image_url}
+						src={props.member.image_url}
 						fallbackImage={defaultImageURL}
 						initialImage={initialImageURL}
 						style={{ maxHeight: 140 }}
@@ -102,72 +121,70 @@ const MemberCard: ComponentType<IBookCardProps> = (props: IBookCardProps): JSX.E
 				</CardMedia>
 				<CardContent>
 
-					{/* Title */}
-					<Typography gutterBottom variant="h5" component="h2">
-						{props.book.title}
-					</Typography>
-
-					{/* Authors */}
-					{props.book.authors.map((a, i) => {
-						return (
-							<Typography key={i}>
-								{getAuthorName(a)}
-							</Typography>
-						);
-					})}
-
-					{/* Copies Available */}
-					<Typography style={{ margin: ".5rem 0" }} gutterBottom component="p">
-						{props.copiesAvailable}/{props.totalCopies} Copies Available
-					</Typography>
-
-					{/* Description */}
-					<Typography variant="body2" color="textSecondary" component="p">
-						{props.book.description}
+					{/* Member Name */}
+					<Typography gutterBottom variant="h5" component="h2" style={{ textAlign: "center" }}>
+						{getPersonName(props.member)}
 					</Typography>
 
 				</CardContent>
 			</CardActionArea>
 			<CardActions style={{ display: "flex", justifyContent: "center" }}>
 
-				{/* Open Dialog for Book Edit History (Events) */}
-				<Tooltip title="Edit History">
+				{/* Open Dialog for Member Checkout History (Events) */}
+				<Tooltip title="Checkouts History">
 					<>
 						<IconButton onClick={handleClickHistory}>
 							<History />
 						</IconButton>
-						<BookHistoryDialog
+						<MemberHistoryDialog
 							setOpen={setOpenHistoryDialog}
 							open={openHistoryDialog}
-							book={props.book} />
+							member={props.member} />
 					</>
 				</Tooltip>
 
-				<Tooltip title="Edit">
+				<Tooltip title="Checkout">
 					<>
-						<IconButton onClick={handleClickEdit}>
-							<EditOutlinedIcon />
+						<IconButton onClick={handleClickCheckout}>
+							<ShoppingCart />
 						</IconButton>
-						<BookEditDialog
-							setRefresh={setRefresh}
-							setOpen={setOpenEditDialog}
-							open={openEditDialog}
-							book={props.book} />
+						<MemberCheckoutDialog
+							setOpen={setOpenCheckoutDialog}
+							open={openCheckoutDialog}
+							checkouts={props.checkouts}
+							member={props.member}
+							books={props.books}
+						/>
 					</>
 				</Tooltip>
 
-				<Tooltip title="Delete">
-					<>
-						<IconButton onClick={handleClickDelete}>
-							<DeleteForeverIcon />
-						</IconButton>
-						<BookDeleteDialog
-							setRefresh={setRefresh}
-							setOpen={setOpenDeleteDialog}
-							open={openDeleteDialog}
-							book={props.book} />
-					</>
-				</Tooltip>
+				{/* TODO: Member editing if there's time */}
+				{/*<Tooltip title="Edit">*/}
+				{/*	<>*/}
+				{/*		<IconButton onClick={handleClickEdit}>*/}
+				{/*			<EditOutlinedIcon />*/}
+				{/*		</IconButton>*/}
+				{/*		<BookEditDialog*/}
+				{/*			setRefresh={setRefresh}*/}
+				{/*			setOpen={setOpenEditDialog}*/}
+				{/*			open={openEditDialog}*/}
+				{/*			book={props.book} />*/}
+				{/*	</>*/}
+				{/*</Tooltip>*/}
+
+				{/* TODO: Member deleting if there's time */}
+				{/*<Tooltip title="Delete">*/}
+				{/*	<>*/}
+				{/*		<IconButton onClick={handleClickDelete}>*/}
+				{/*			<DeleteForeverIcon />*/}
+				{/*		</IconButton>*/}
+				{/*		<BookDeleteDialog*/}
+				{/*			setRefresh={setRefresh}*/}
+				{/*			setOpen={setOpenDeleteDialog}*/}
+				{/*			open={openDeleteDialog}*/}
+				{/*			book={props.book} />*/}
+				{/*	</>*/}
+				{/*</Tooltip>*/}
 			</CardActions>
 		</Card>
 	);
