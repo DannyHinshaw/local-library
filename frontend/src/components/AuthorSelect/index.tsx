@@ -83,7 +83,7 @@ const AuthorSelect: ComponentType<IAuthorSelectProps> = (props: IAuthorSelectPro
 				{authorsList.map((author, i) => {
 					return (
 						<MenuItem key={author.id} value={author.id}>
-							<Checkbox checked={props.authorIDs.indexOf(author.id) > -1} />
+							<Checkbox checked={props.authorIDs.includes(author.id)} />
 							<ListItemText primary={getAuthorName(author)} />
 						</MenuItem>
 					);
