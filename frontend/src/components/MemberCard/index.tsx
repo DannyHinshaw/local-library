@@ -72,7 +72,7 @@ const MemberCard: ComponentType<IMemberCardProps> = (props: IMemberCardProps): J
 	// Retrieve and store books.
 	const fetchMembers = () => api.getAllMembers().then((res): OrNull<any> => {
 		return res.data.length
-			? handleBookData(res.data)
+			? handleMembersData(res.data)
 			: null;
 	});
 

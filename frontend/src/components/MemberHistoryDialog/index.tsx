@@ -27,6 +27,7 @@ const MemberHistoryDialog: ComponentType<IMemberHistoryDialogProps> = (props: IM
 	const { open } = props;
 	const memberName = getPersonName(props.member);
 	const [checkouts, setCheckouts] = useState([] as ICheckout[]);
+	const [refresh, setRefresh] = useState(false);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null as OrNull<string>);
 
@@ -36,15 +37,17 @@ const MemberHistoryDialog: ComponentType<IMemberHistoryDialogProps> = (props: IM
 	const descriptionElementRef = React.useRef<HTMLElement>(null);
 	useEffect(() => {
 		if (open) {
-			if (!checkouts.length) {
+			if (!checkouts.length || refresh) {
 				setLoading(true);
 				api.getCheckoutsByMemberID(props.member.id).then(res => {
 					setCheckouts(res.data);
 					setLoading(false);
+					setRefresh(false);
 					return;
 				}).catch(err => {
 					setError("Error loading book history...");
 					setLoading(false);
+					setRefresh(false);
 					console.error(err);
 				});
 			}
@@ -54,7 +57,7 @@ const MemberHistoryDialog: ComponentType<IMemberHistoryDialogProps> = (props: IM
 				descriptionElement.focus();
 			}
 		}
-	}, [open]);
+	}, [open, refresh]);
 
 	return (
 		<div>
@@ -75,13 +78,16 @@ const MemberHistoryDialog: ComponentType<IMemberHistoryDialogProps> = (props: IM
 
 				<DialogContent dividers={true} style={{ padding: 0 }}>
 					{loading
-						? (<div style={{ textAlign: "center" }}>
-								<CircularProgress />
-							</div>
-						)
+						? <div style={{ textAlign: "center" }}>
+							<CircularProgress />
+						</div>
 						: error
 							? "Oops, something went wrong :/"
-							: <CheckoutsList checkouts={checkouts} />}
+							: <CheckoutsList
+								checkouts={checkouts}
+								setLoading={setLoading}
+								setRefresh={setRefresh}
+								setError={setError} />}
 				</DialogContent>
 
 				<DialogActions>

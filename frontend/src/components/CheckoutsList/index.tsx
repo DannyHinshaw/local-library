@@ -1,4 +1,3 @@
-import Divider from "@material-ui/core/Divider";
 import Grid from "@material-ui/core/Grid";
 import IconButton from "@material-ui/core/IconButton";
 import List from "@material-ui/core/List";
@@ -7,7 +6,8 @@ import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
 import Tooltip from "@material-ui/core/Tooltip";
 import AssignmentReturnIcon from "@material-ui/icons/AssignmentReturn";
 import React, { ComponentType } from "react";
-import { ICheckout } from "../../types";
+import { api } from "../../api";
+import { ICheckout, OrNull, StateSetter } from "../../types";
 import "./styles.scss";
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -26,11 +26,14 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 export interface ICheckoutsListProps {
+	setLoading: StateSetter<boolean>
+	setRefresh: StateSetter<boolean>
+	setError: StateSetter<OrNull<string>>
 	checkouts: ICheckout[]
 }
 
 /**
- * Material list component for book events/history.
+ * Material list component for viewing member checkout histories.
  * @param {ICheckoutsListProps} props
  * @returns {JSX.Element}
  * @constructor
@@ -39,8 +42,18 @@ const CheckoutsList: ComponentType<ICheckoutsListProps> = (props: ICheckoutsList
 	const classes = useStyles();
 	const numEvents = props.checkouts.length;
 
-	const handleClickReturn = () => {
-		console.log("TODO:: RETURN BOOK TO API");
+	const handleClickReturn = (checkout: ICheckout) => () => {
+		props.setLoading(true);
+		api.patchReturnCheckout({
+			member_id: checkout.member_id,
+			book_id: checkout.book_id
+		}).then(res => {
+			props.setLoading(false);
+			props.setRefresh(true);
+		}).catch(e => {
+			props.setLoading(false);
+			props.setError(e);
+		});
 	};
 
 	return (
@@ -63,7 +76,11 @@ const CheckoutsList: ComponentType<ICheckoutsListProps> = (props: ICheckoutsList
 												{/* Column Headings */}
 												<strong>Book ID:</strong>
 												<strong>Checked Out:</strong>
-												<strong>Returned On:</strong>
+												<strong>
+													{checkout.returned
+														? "Returned On:"
+														: "Return Now:"}
+												</strong>
 
 												{/* Values */}
 												<div style={{ textAlign: "center" }}>
@@ -76,17 +93,15 @@ const CheckoutsList: ComponentType<ICheckoutsListProps> = (props: ICheckoutsList
 													{checkout.returned
 														? returnedAt
 														: (
-															<Tooltip title="Return now">
+															<Tooltip title="Click to return">
 																<IconButton
-																	onClick={handleClickReturn}
-																	style={{ padding: 0, margin: "0 0 0 25%", textAlign: "center" }}>
+																	onClick={handleClickReturn(checkout)}
+																	style={{ padding: 0, margin: "0 0 0 20%", textAlign: "center" }}>
 																	<AssignmentReturnIcon />
 																</IconButton>
 															</Tooltip>
 														)}
 												</div>
-
-												{(i !== numEvents - 1) && <Divider style={{ margin: "1rem 0" }} />}
 											</div>
 										</ListItem>
 									);

@@ -29,7 +29,7 @@ export interface IBooksSelectProps {
 
 
 /**
- * Multi-select component for choosing book authors.
+ * Multi-select component for choosing books to checkout for a member.
  * @returns {JSX.Element}
  * @constructor
  */
@@ -64,7 +64,7 @@ const BooksSelect: ComponentType<IBooksSelectProps> = (props: IBooksSelectProps)
 	};
 
 	return (
-		<FormControl style={{ height: "5rem", width: "75%" }}>
+		<FormControl style={{ height: "5rem", width: "95%" }}>
 			<InputLabel id="mutiple-checkbox-label">
 				Books Available
 			</InputLabel>

@@ -145,12 +145,14 @@ const MembersView: ComponentType<IMembersView> = (props: IMembersView): JSX.Elem
 						open={openCreateDialog} />
 				</div>
 
-				<Masonry
-					className="my-masonry-grid"
-					breakpointCols={breakpointColumnsObj}
-					columnClassName="my-masonry-grid_column">
-					{renderCards()}
-				</Masonry>
+				<div id="masonryContainer">
+					<Masonry
+						className="my-masonry-grid"
+						breakpointCols={breakpointColumnsObj}
+						columnClassName="my-masonry-grid_column">
+						{renderCards()}
+					</Masonry>
+				</div>
 			</>
 		);
 };

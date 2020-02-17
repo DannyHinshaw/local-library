@@ -75,7 +75,7 @@ const MemberCheckoutDialog: ComponentType<IMemberCheckoutDialogProps> = (props: 
 
 				<DialogActions>
 					<Button onClick={handleClose} color="primary">
-						Close
+						Cancel
 					</Button>
 					<SubmitButton
 						closeDialog={handleClose}

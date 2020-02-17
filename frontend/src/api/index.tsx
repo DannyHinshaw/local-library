@@ -22,6 +22,18 @@ export interface IPostNewBookPayload extends IBookPayloadBase {
 	isbn: string // Required by endpoint
 }
 
+export interface IMemberActionBase {
+	member_id: string
+}
+
+export interface IPostNewCheckoutsPayload extends IMemberActionBase {
+	book_ids: number[]
+}
+
+export interface IPatchReturnCheckout extends IMemberActionBase {
+	book_id: number
+}
+
 export const baseUrl: string = "http://localhost:8000";
 
 /* =======================================================
@@ -107,6 +119,20 @@ const getCheckoutsByMemberID = (id: string) => {
 		.then(res => res.json());
 };
 
+const postNewCheckouts = (payload: IPostNewCheckoutsPayload) => {
+	return fetch(`${baseUrl}/checkouts`, {
+		method: "POST",
+		body: JSON.stringify(payload)
+	});
+};
+
+const patchReturnCheckout = (payload: IPatchReturnCheckout) => {
+	return fetch(`${baseUrl}/checkouts`, {
+		method: "PATCH",
+		body: JSON.stringify(payload)
+	});
+};
+
 /* 				  Events Handlers
 ============================================== */
 
@@ -154,6 +180,8 @@ export interface IAPI {
 	// Checkouts
 	getAllCheckouts: typeof getAllCheckouts
 	getCheckoutsByMemberID: typeof getCheckoutsByMemberID
+	postNewCheckouts: typeof postNewCheckouts
+	patchReturnCheckout: typeof patchReturnCheckout
 
 	// Events
 	getAllEvents: typeof getAllEvents
@@ -184,6 +212,8 @@ export const api: IAPI = {
 	// Checkouts
 	getAllCheckouts,
 	getCheckoutsByMemberID,
+	postNewCheckouts,
+	patchReturnCheckout,
 
 	// Events
 	getAllEvents,
