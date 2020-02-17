@@ -27,7 +27,7 @@ export interface IMemberActionBase {
 }
 
 export interface IPostNewCheckoutsPayload extends IMemberActionBase {
-	book_ids: number[]
+	isbns: string[]
 }
 
 export interface IPatchReturnCheckout extends IMemberActionBase {

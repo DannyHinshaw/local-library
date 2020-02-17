@@ -151,6 +151,7 @@ const MemberCard: ComponentType<IMemberCardProps> = (props: IMemberCardProps): J
 						<MemberCheckoutDialog
 							setOpen={setOpenCheckoutDialog}
 							open={openCheckoutDialog}
+							setRefresh={setRefresh}
 							checkouts={props.checkouts}
 							member={props.member}
 							books={props.books}

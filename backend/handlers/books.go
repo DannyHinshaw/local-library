@@ -42,7 +42,7 @@ type BookResponse struct {
 // Common request errors
 var errorBookISBN = errors.New("book isbn missing in request")
 
-// sliceContainsString - Util function to check a slice of strings for a string.
+// sliceContainsUUID - Util function to check a slice of strings for a string.
 func sliceContainsUUID(s []uuid.UUID, e uuid.UUID) bool {
 	for _, a := range s {
 		if a == e {
@@ -80,6 +80,8 @@ func queryBookWithParamID(r *http.Request) (*db.Copy, error) {
 
 // GetAllBooks - Get all books records.
 func GetAllBooks(w http.ResponseWriter, r *http.Request) {
+	// TODO: Add optional param `/available` for
+	// 	client to get only books with copies available.
 	var allBooks []db.Book
 	db.GetAllBooksWithRelations(&allBooks)
 	json.NewEncoder(w).Encode(BooksResponse{

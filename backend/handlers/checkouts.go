@@ -14,7 +14,7 @@ import (
 
 type PostCheckouts struct {
 	MemberID uuid.UUID `json:"member_id"`
-	BookIDs  []uint    `json:"book_ids"`
+	ISBNs    []string  `json:"isbns"`
 }
 
 type CheckoutResponse struct {
@@ -36,6 +36,16 @@ type CheckoutQueryPayload struct {
 
 // Common request errors
 var errorBookID = errors.New("book id missing in request")
+
+// containsString - Helper func to check slice for presence of an isbn.
+func containsString(s []string, e string) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
+}
 
 // queryCheckoutWithParamBookID - Build gorm book query with id from url params.
 func queryCheckoutWithParams(r *http.Request) (*db.Checkout, error) {
@@ -110,14 +120,34 @@ func PostNewCheckouts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Get all copies for a range of ISBNs
+	var bookCopies []db.Copy
+	var copyQueries []string
+	for _, isbn := range postCheckouts.ISBNs {
+		copyQueries = append(copyQueries, isbn)
+	}
+	db.MySQL.Where("isbn IN (?)", copyQueries).Find(&bookCopies)
+
+	var usedISBNs []string
 	var checkouts []interface{}
-	for _, bookId := range postCheckouts.BookIDs {
+	for _, bookCopy := range bookCopies {
+
+		// Only get one bookCopy per isbn
+		if containsString(usedISBNs, bookCopy.ISBN) {
+			continue
+		}
+
 		newCheckout := db.Checkout{
-			BookID:     bookId,
+			Base: db.Base{
+				CreatedAt: time.Now(),
+				UpdatedAt: time.Now(),
+			},
+			BookID:     bookCopy.ID,
 			MemberID:   postCheckouts.MemberID,
 			CheckedOut: time.Now(),
 		}
 		checkouts = append(checkouts, newCheckout)
+		usedISBNs = append(usedISBNs, bookCopy.ISBN)
 	}
 
 	errBulkCheckouts := gormbulk.BulkInsert(db.MySQL, checkouts, 3000)

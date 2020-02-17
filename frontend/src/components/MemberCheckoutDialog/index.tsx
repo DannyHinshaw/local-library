@@ -4,6 +4,7 @@ import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
 import DialogTitle from "@material-ui/core/DialogTitle";
 import React, { ComponentType, useState } from "react";
+import { api } from "../../api";
 import { BookState } from "../../store/reducers/booksReducer";
 import { CheckoutsState } from "../../store/reducers/checkoutsReducer";
 import { IMember, OrNull, StateSetter } from "../../types";
@@ -13,6 +14,7 @@ import SubmitButton from "../SubmitButton";
 
 
 interface IMemberCheckoutDialogProps {
+	setRefresh: StateSetter<boolean>
 	setOpen: StateSetter<boolean>
 	checkouts: CheckoutsState
 	books: BookState
@@ -29,6 +31,7 @@ interface IMemberCheckoutDialogProps {
 const MemberCheckoutDialog: ComponentType<IMemberCheckoutDialogProps> = (props: IMemberCheckoutDialogProps): JSX.Element => {
 	const { open } = props;
 	const memberName = getPersonName(props.member);
+	const member_id = props.member.id;
 
 	const [bookISBNs, setBookISBNs] = useState([] as string[]);
 	const [loading, setLoading] = useState(true);
@@ -42,8 +45,19 @@ const MemberCheckoutDialog: ComponentType<IMemberCheckoutDialogProps> = (props: 
 	// }, [])
 
 	const handleSubmit = () => {
-		console.log("TODO: Handle CHECKOUT");
+		console.log("bookISBNs::", bookISBNs);
 		return Promise.resolve();
+		setLoading(true);
+		return api.postNewCheckouts({
+			isbns: bookISBNs,
+			member_id
+		}).then(res => {
+			setLoading(false);
+			props.setRefresh(true);
+		}).catch(e => {
+			setLoading(false);
+			setError(e);
+		});
 	};
 
 	const handleClose = () =>
@@ -69,8 +83,9 @@ const MemberCheckoutDialog: ComponentType<IMemberCheckoutDialogProps> = (props: 
 				<DialogContent dividers={true} style={{ textAlign: "center", padding: 0 }}>
 					<BooksSelect
 						bookISBNs={bookISBNs}
+						setBookISBNs={setBookISBNs}
 						booksAvailable={props.books}
-						setBookISBNs={setBookISBNs} />
+					/>
 				</DialogContent>
 
 				<DialogActions>

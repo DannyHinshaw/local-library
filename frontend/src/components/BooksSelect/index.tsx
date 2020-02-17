@@ -24,7 +24,7 @@ const MenuProps = {
 export interface IBooksSelectProps {
 	setBookISBNs: StateSetter<string[]>
 	booksAvailable: BookState
-	bookISBNs: any[]
+	bookISBNs: string[]
 }
 
 
