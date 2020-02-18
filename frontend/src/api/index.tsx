@@ -44,7 +44,8 @@ export interface IPostNewMemberPayload extends IPostAuthorPayload {
 	image_url: string
 }
 
-export const baseUrl: string = "http://localhost:8000";
+export const API_BASE_URL: string = "http://localhost:8000/api";
+
 
 /* =======================================================
  *					        Utility Functions
@@ -60,11 +61,11 @@ export const baseUrl: string = "http://localhost:8000";
 ============================================== */
 
 const getHealthCheck = () => {
-	return fetch(`${baseUrl}/health`);
+	return fetch(`${API_BASE_URL}/health`);
 };
 
 const getSeedDatabase = () => {
-	return fetch(`${baseUrl}/seed`);
+	return fetch(`${API_BASE_URL}/seed`);
 };
 
 
@@ -72,17 +73,17 @@ const getSeedDatabase = () => {
 ============================================== */
 
 const getAllAuthors = () => {
-	return fetch(`${baseUrl}/authors?books=true`)
+	return fetch(`${API_BASE_URL}/authors?books=true`)
 		.then(res => res.json());
 };
 
 const getAuthorByID = (id: string) => {
-	return fetch(`${baseUrl}/authors/${id}`)
+	return fetch(`${API_BASE_URL}/authors/${id}`)
 		.then(res => res.json());
 };
 
 const postCreateNewAuthor = (author: IPostAuthorPayload) => {
-	return fetch(`${baseUrl}/authors`, {
+	return fetch(`${API_BASE_URL}/authors`, {
 		method: "POST",
 		body: JSON.stringify(author)
 	});
@@ -93,31 +94,31 @@ const postCreateNewAuthor = (author: IPostAuthorPayload) => {
 ============================================== */
 
 const getAllBooks = () => {
-	return fetch(`${baseUrl}/books`)
+	return fetch(`${API_BASE_URL}/books`)
 		.then(res => res.json());
 };
 
 const getBookByISBN = (isbn: string) => {
-	return fetch(`${baseUrl}/books/${isbn}`)
+	return fetch(`${API_BASE_URL}/books/${isbn}`)
 		.then(res => res.json());
 };
 
 const patchUpdateBookByISBN = (payload: IPatchUpdateBookPayload) => {
 	const { isbn } = payload;
-	return fetch(`${baseUrl}/books/${isbn}`, {
+	return fetch(`${API_BASE_URL}/books/${isbn}`, {
 		method: "PATCH",
 		body: JSON.stringify(payload)
 	});
 };
 
 const deleteBookByISBN = (isbn: string) => {
-	return fetch(`${baseUrl}/books/${isbn}`, {
+	return fetch(`${API_BASE_URL}/books/${isbn}`, {
 		method: "DELETE"
 	});
 };
 
 const postNewBook = (payload: IPostNewBookPayload) => {
-	return fetch(`${baseUrl}/books`, {
+	return fetch(`${API_BASE_URL}/books`, {
 		method: "POST",
 		body: JSON.stringify(payload)
 	});
@@ -128,24 +129,24 @@ const postNewBook = (payload: IPostNewBookPayload) => {
 ============================================== */
 
 const getAllCheckouts = () => {
-	return fetch(`${baseUrl}/checkouts`)
+	return fetch(`${API_BASE_URL}/checkouts`)
 		.then(res => res.json());
 };
 
 const getCheckoutsByMemberID = (id: string) => {
-	return fetch(`${baseUrl}/checkouts/${id}`)
+	return fetch(`${API_BASE_URL}/checkouts/${id}`)
 		.then(res => res.json());
 };
 
 const postNewCheckouts = (payload: IPostNewCheckoutsPayload) => {
-	return fetch(`${baseUrl}/checkouts`, {
+	return fetch(`${API_BASE_URL}/checkouts`, {
 		method: "POST",
 		body: JSON.stringify(payload)
 	});
 };
 
 const patchReturnCheckout = (payload: IPatchReturnCheckout) => {
-	return fetch(`${baseUrl}/checkouts`, {
+	return fetch(`${API_BASE_URL}/checkouts`, {
 		method: "PATCH",
 		body: JSON.stringify(payload)
 	});
@@ -156,12 +157,12 @@ const patchReturnCheckout = (payload: IPatchReturnCheckout) => {
 ============================================== */
 
 const getAllEvents = () => {
-	return fetch(`${baseUrl}/events`)
+	return fetch(`${API_BASE_URL}/events`)
 		.then(res => res.json());
 };
 
 const getEventsByBookISBN = (isbn: string) => {
-	return fetch(`${baseUrl}/events/books/${isbn}`)
+	return fetch(`${API_BASE_URL}/events/books/${isbn}`)
 		.then(res => res.json());
 };
 
@@ -170,17 +171,17 @@ const getEventsByBookISBN = (isbn: string) => {
 ============================================== */
 
 const getAllMembers = () => {
-	return fetch(`${baseUrl}/members`)
+	return fetch(`${API_BASE_URL}/members`)
 		.then(res => res.json());
 };
 
 const getMemberByID = (id: string) => {
-	return fetch(`${baseUrl}/members/${id}`)
+	return fetch(`${API_BASE_URL}/members/${id}`)
 		.then(res => res.json());
 };
 
 const postCreateNewMember = (member: IPostNewMemberPayload) => {
-	return fetch(`${baseUrl}/members`, {
+	return fetch(`${API_BASE_URL}/members`, {
 		method: "POST",
 		body: JSON.stringify(member)
 	});

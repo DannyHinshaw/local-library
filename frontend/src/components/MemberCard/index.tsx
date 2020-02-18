@@ -52,8 +52,6 @@ const initialImageURL = "images/image-loading.gif";
  * @constructor
  */
 const MemberCard: ComponentType<IMemberCardProps> = (props: IMemberCardProps): JSX.Element => {
-	console.log("props.member::", props.member);
-	console.log("props.member.image_url::", props.member.image_url);
 	const classes = useStyles();
 	const [openCheckoutDialog, setOpenCheckoutDialog] = useState(false);
 	const [openHistoryDialog, setOpenHistoryDialog] = useState(false);
@@ -113,7 +111,7 @@ const MemberCard: ComponentType<IMemberCardProps> = (props: IMemberCardProps): J
 	return (
 		<Card className={classes.root}>
 			<CardActionArea>
-				<CardMedia className={classes.media} style={{height: "auto"}}>
+				<CardMedia className={classes.media} style={{ height: "auto" }}>
 					<ReactImageFallback
 						src={props.member.image_url}
 						fallbackImage={defaultImageURL}
@@ -132,34 +130,31 @@ const MemberCard: ComponentType<IMemberCardProps> = (props: IMemberCardProps): J
 			</CardActionArea>
 			<CardActions style={{ display: "flex", justifyContent: "center" }}>
 
-				{/* Open Dialog for Member Checkout History (Events) */}
-				<Tooltip title="Checkouts History">
-					<>
-						<IconButton onClick={handleClickHistory}>
-							<History />
-						</IconButton>
-						<MemberHistoryDialog
-							setOpen={setOpenHistoryDialog}
-							open={openHistoryDialog}
-							member={props.member} />
-					</>
+				{/* Open dialog for member checkout history */}
+				<Tooltip title="Checkout History">
+					<IconButton onClick={handleClickHistory}>
+						<History />
+					</IconButton>
 				</Tooltip>
+				<MemberHistoryDialog
+					setOpen={setOpenHistoryDialog}
+					open={openHistoryDialog}
+					member={props.member} />
 
-				<Tooltip title="Checkout">
-					<>
-						<IconButton onClick={handleClickCheckout}>
-							<ShoppingCart />
-						</IconButton>
-						<MemberCheckoutDialog
-							setOpen={setOpenCheckoutDialog}
-							open={openCheckoutDialog}
-							setRefresh={setRefresh}
-							checkouts={props.checkouts}
-							member={props.member}
-							books={props.books}
-						/>
-					</>
+				{/* Open dialog to checkout books */}
+				<Tooltip title="Checkout Books">
+					<IconButton onClick={handleClickCheckout}>
+						<ShoppingCart />
+					</IconButton>
 				</Tooltip>
+				<MemberCheckoutDialog
+					setOpen={setOpenCheckoutDialog}
+					open={openCheckoutDialog}
+					setRefresh={setRefresh}
+					checkouts={props.checkouts}
+					member={props.member}
+					books={props.books}
+				/>
 
 				{/* TODO: Member editing if there's time */}
 				{/*<Tooltip title="Edit">*/}

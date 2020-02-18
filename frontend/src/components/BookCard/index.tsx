@@ -130,44 +130,41 @@ const BookCard: ComponentType<IBookCardProps> = (props: IBookCardProps): JSX.Ele
 			</CardActionArea>
 			<CardActions style={{ display: "flex", justifyContent: "center" }}>
 
-				{/* Open Dialog for Book Edit History (Events) */}
+				{/* Open dialog for book edit history (Events) */}
 				<Tooltip title="Edit History">
-					<>
-						<IconButton onClick={handleClickHistory}>
-							<History />
-						</IconButton>
-						<BookHistoryDialog
-							setOpen={setOpenHistoryDialog}
-							open={openHistoryDialog}
-							book={props.book} />
-					</>
+					<IconButton onClick={handleClickHistory}>
+						<History />
+					</IconButton>
 				</Tooltip>
+				<BookHistoryDialog
+					setOpen={setOpenHistoryDialog}
+					open={openHistoryDialog}
+					book={props.book} />
 
+				{/* Open dialog to edit book data */}
 				<Tooltip title="Edit">
-					<>
-						<IconButton onClick={handleClickEdit}>
-							<EditOutlinedIcon />
-						</IconButton>
-						<BookEditDialog
-							setRefresh={setRefresh}
-							setOpen={setOpenEditDialog}
-							open={openEditDialog}
-							book={props.book} />
-					</>
+					<IconButton onClick={handleClickEdit}>
+						<EditOutlinedIcon />
+					</IconButton>
 				</Tooltip>
+				<BookEditDialog
+					setRefresh={setRefresh}
+					setOpen={setOpenEditDialog}
+					open={openEditDialog}
+					book={props.book} />
 
+				{/* Open dialog to delete book */}
 				<Tooltip title="Delete">
-					<>
-						<IconButton onClick={handleClickDelete}>
-							<DeleteForeverIcon />
-						</IconButton>
-						<BookDeleteDialog
-							setRefresh={setRefresh}
-							setOpen={setOpenDeleteDialog}
-							open={openDeleteDialog}
-							book={props.book} />
-					</>
+					<IconButton onClick={handleClickDelete}>
+						<DeleteForeverIcon />
+					</IconButton>
 				</Tooltip>
+				<BookDeleteDialog
+					setRefresh={setRefresh}
+					setOpen={setOpenDeleteDialog}
+					open={openDeleteDialog}
+					book={props.book} />
+
 			</CardActions>
 		</Card>
 	);
