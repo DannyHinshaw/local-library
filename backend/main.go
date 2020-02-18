@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/gorilla/mux"
 	"log"
+	"main/db"
 	"main/handlers"
 	"net/http"
 	"os"
@@ -148,7 +149,7 @@ func main() {
 
 	// Close database connection gracefully
 	//db.MySQL.LogMode(true)
-	//defer db.MySQL.Close()
+	defer db.MySQL.Close()
 
 	// Block until we receive our signal.
 	<-c
