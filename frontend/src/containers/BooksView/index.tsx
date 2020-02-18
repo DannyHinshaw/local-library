@@ -88,7 +88,7 @@ const BooksView: ComponentType<IBooksView> = (props: IBooksView): JSX.Element =>
 
 	// Retrieve and store books.
 	const fetchBooks = () => api.getAllBooks().then((res): OrNull<any> => {
-		return res.data.length
+		return res.data && res.data.length
 			? handleBookData(res.data)
 			: null;
 	});
@@ -100,14 +100,12 @@ const BooksView: ComponentType<IBooksView> = (props: IBooksView): JSX.Element =>
 				fetchAuthors(),
 				fetchCheckouts()
 			]).then((hasData) => {
-				console.log("hasData::", hasData);
-				console.log("!hasData[0]::", !hasData[0]);
 
 				// Seed the database if there's no test data yet.
 				if (!hasData[0]) {
 					return api.getSeedDatabase()
 						.then(console.log)
-						.then(window.location.reload)
+						.then(() => window.location.reload())
 						.catch(console.error);
 				}
 

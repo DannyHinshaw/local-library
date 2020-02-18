@@ -52,6 +52,8 @@ const initialImageURL = "images/image-loading.gif";
  * @constructor
  */
 const MemberCard: ComponentType<IMemberCardProps> = (props: IMemberCardProps): JSX.Element => {
+	console.log("props.member::", props.member);
+	console.log("props.member.image_url::", props.member.image_url);
 	const classes = useStyles();
 	const [openCheckoutDialog, setOpenCheckoutDialog] = useState(false);
 	const [openHistoryDialog, setOpenHistoryDialog] = useState(false);
@@ -111,7 +113,7 @@ const MemberCard: ComponentType<IMemberCardProps> = (props: IMemberCardProps): J
 	return (
 		<Card className={classes.root}>
 			<CardActionArea>
-				<CardMedia className={classes.media}>
+				<CardMedia className={classes.media} style={{height: "auto"}}>
 					<ReactImageFallback
 						src={props.member.image_url}
 						fallbackImage={defaultImageURL}

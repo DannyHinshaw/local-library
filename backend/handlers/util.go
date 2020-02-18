@@ -199,6 +199,7 @@ func GetSeedDatabase(w http.ResponseWriter, r *http.Request) {
 	members := getSeedDataMembers()
 	for _, member := range members {
 		newMember := db.Member{
+			ImageURL: member.ImageURL,
 			Person: db.Person{
 				Base:      base,
 				ID:        member.ID,
