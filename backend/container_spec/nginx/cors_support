@@ -1,5 +1,5 @@
 set $cors '';
-if ($http_origin ~* 'https?://(localhost:3000|localhost)') {
+if ($http_origin ~* 'https?://(localhost:3000|localhost:8000|0.0.0.0:8000|localhost)') {
         set $cors 'true';
 }
 # always is required to add headers even if response's status is 4xx or 5xx
