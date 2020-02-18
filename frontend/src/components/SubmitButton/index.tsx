@@ -61,7 +61,7 @@ const SubmitButton: ComponentType<IButtonLoaderProps> = (props: IButtonLoaderPro
 	const handleButtonClick = () => {
 		setLoading(true);
 		props.handleSubmit().then((res) => {
-			if (res.error || res.status > 204) {
+			if (res && (res.error || res.status > 204)) {
 				props.setError(res.error || genericErrorMsg);
 				console.log("ERROR::", res);
 				setLoading(false);

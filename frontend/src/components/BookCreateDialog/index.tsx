@@ -9,6 +9,7 @@ import React, { ChangeEvent, ComponentType, useState } from "react";
 import { api, IPostNewBookPayload } from "../../api";
 import { OrNull, StateSetter } from "../../types";
 import AuthorSelect from "../AuthorSelect";
+import ErrorSpan from "../ErrorSpan";
 import SubmitButton from "../SubmitButton";
 
 
@@ -55,17 +56,22 @@ const BookCreateDialog: ComponentType<IBookCreateDialog> = (props: IBookCreateDi
 	const stopFormEvent = (e) =>
 		e.preventDefault();
 
-	const handleSubmit = () => {
+	const handleSubmit = async () => {
 		const sanitizedISBN = isbn.replace(/-/g, "");
 		const isValidISBN13 = sanitizedISBN.length > 9 && sanitizedISBN.length < 14;
 		if (!isValidISBN13) {
 			const errMsg = "ISBN is required, valid ISBN's are between 10 and 13 digits";
-			return Promise.resolve({ error: errMsg });
+			return { error: errMsg };
 		}
 
 		if (!title) {
 			const errMsg = "Book title is required.";
-			return Promise.resolve({ error: errMsg });
+			return { error: errMsg };
+		}
+
+		if (!authorIDs.length) {
+			const errMsg = "At least one author is required.";
+			return { error: errMsg };
 		}
 
 		setError("");
@@ -88,7 +94,6 @@ const BookCreateDialog: ComponentType<IBookCreateDialog> = (props: IBookCreateDi
 		});
 	};
 
-	// TODO: Finish form
 	return (
 		<div>
 			<Dialog
@@ -173,15 +178,7 @@ const BookCreateDialog: ComponentType<IBookCreateDialog> = (props: IBookCreateDi
 						</div>
 						<br />
 
-						{error && (
-							<>
-								<br />
-								<div style={{ textAlign: "center" }}>
-									<Typography style={{ margin: "0 auto", width: "75%" }} color="error">
-										{error}
-									</Typography>
-								</div>
-							</>)}
+						<ErrorSpan error={error} />
 
 						<DialogActions>
 							<Button onClick={handleClose} color="primary">

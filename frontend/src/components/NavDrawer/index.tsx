@@ -13,7 +13,7 @@ import ChevronLeftIcon from "@material-ui/icons/ChevronLeftOutlined";
 import ChevronRightIcon from "@material-ui/icons/ChevronRightOutlined";
 import LibraryBooksIcon from "@material-ui/icons/LibraryBooksOutlined";
 import MenuIcon from "@material-ui/icons/MenuOutlined";
-import PeopleIcon from "@material-ui/icons/PeopleAltOutlined";
+import PeopleIcon from "@material-ui/icons/PeopleOutline";
 import SupervisorAccountIcon from "@material-ui/icons/SupervisorAccountOutlined";
 import clsx from "clsx";
 import React, { ComponentType, useState } from "react";
@@ -174,7 +174,6 @@ const NavDrawer: ComponentType = (): JSX.Element => {
 						<ListItemText primary="Books" />
 					</ListItem>
 
-					{/* Authors */}
 					<ListItem
 						onClick={handleMenuItemClick(2)}
 						selected={view === AppView.AUTHORS}
@@ -201,6 +200,8 @@ const NavDrawer: ComponentType = (): JSX.Element => {
 					</ListItem>
 				</List>
 			</Drawer>
+
+			{/* Views Render Here */}
 			<main
 				className={clsx(classes.content, {
 					[classes.contentShift]: open

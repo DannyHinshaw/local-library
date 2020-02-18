@@ -22,6 +22,28 @@ export interface IPostNewBookPayload extends IBookPayloadBase {
 	isbn: string // Required by endpoint
 }
 
+export interface IMemberActionBase {
+	member_id: string
+}
+
+export interface IPostNewCheckoutsPayload extends IMemberActionBase {
+	isbns: string[]
+}
+
+export interface IPatchReturnCheckout extends IMemberActionBase {
+	book_id: number
+}
+
+export interface IPostAuthorPayload {
+	first_name: string
+	last_name: string
+	middle: string
+}
+
+export interface IPostNewMemberPayload extends IPostAuthorPayload {
+	image_url: string
+}
+
 export const baseUrl: string = "http://localhost:8000";
 
 /* =======================================================
@@ -50,7 +72,7 @@ const getSeedDatabase = () => {
 ============================================== */
 
 const getAllAuthors = () => {
-	return fetch(`${baseUrl}/authors`)
+	return fetch(`${baseUrl}/authors?books=true`)
 		.then(res => res.json());
 };
 
@@ -58,6 +80,14 @@ const getAuthorByID = (id: string) => {
 	return fetch(`${baseUrl}/authors/${id}`)
 		.then(res => res.json());
 };
+
+const postCreateNewAuthor = (author: IPostAuthorPayload) => {
+	return fetch(`${baseUrl}/authors`, {
+		method: "POST",
+		body: JSON.stringify(author)
+	});
+};
+
 
 /* 				  Books Handlers
 ============================================== */
@@ -102,6 +132,26 @@ const getAllCheckouts = () => {
 		.then(res => res.json());
 };
 
+const getCheckoutsByMemberID = (id: string) => {
+	return fetch(`${baseUrl}/checkouts/${id}`)
+		.then(res => res.json());
+};
+
+const postNewCheckouts = (payload: IPostNewCheckoutsPayload) => {
+	return fetch(`${baseUrl}/checkouts`, {
+		method: "POST",
+		body: JSON.stringify(payload)
+	});
+};
+
+const patchReturnCheckout = (payload: IPatchReturnCheckout) => {
+	return fetch(`${baseUrl}/checkouts`, {
+		method: "PATCH",
+		body: JSON.stringify(payload)
+	});
+};
+
+
 /* 				  Events Handlers
 ============================================== */
 
@@ -114,6 +164,7 @@ const getEventsByBookISBN = (isbn: string) => {
 	return fetch(`${baseUrl}/events/books/${isbn}`)
 		.then(res => res.json());
 };
+
 
 /* 				  Members Handlers
 ============================================== */
@@ -128,6 +179,13 @@ const getMemberByID = (id: string) => {
 		.then(res => res.json());
 };
 
+const postCreateNewMember = (member: IPostNewMemberPayload) => {
+	return fetch(`${baseUrl}/members`, {
+		method: "POST",
+		body: JSON.stringify(member)
+	});
+};
+
 
 export interface IAPI {
 
@@ -135,9 +193,10 @@ export interface IAPI {
 	getHealthCheck: typeof getHealthCheck
 	getSeedDatabase: typeof getSeedDatabase
 
-	// Books
+	// Authors
 	getAllAuthors: typeof getAllAuthors
 	getAuthorByID: typeof getAuthorByID
+	postCreateNewAuthor: typeof postCreateNewAuthor
 
 	// Books
 	getAllBooks: typeof getAllBooks
@@ -148,6 +207,9 @@ export interface IAPI {
 
 	// Checkouts
 	getAllCheckouts: typeof getAllCheckouts
+	getCheckoutsByMemberID: typeof getCheckoutsByMemberID
+	postNewCheckouts: typeof postNewCheckouts
+	patchReturnCheckout: typeof patchReturnCheckout
 
 	// Events
 	getAllEvents: typeof getAllEvents
@@ -156,6 +218,7 @@ export interface IAPI {
 	// Members
 	getAllMembers: typeof getAllMembers
 	getMemberByID: typeof getMemberByID
+	postCreateNewMember: typeof postCreateNewMember
 }
 
 export const api: IAPI = {
@@ -164,9 +227,10 @@ export const api: IAPI = {
 	getHealthCheck,
 	getSeedDatabase,
 
-	// Books
+	// Authors
 	getAllAuthors,
 	getAuthorByID,
+	postCreateNewAuthor,
 
 	// Books
 	getAllBooks,
@@ -177,6 +241,9 @@ export const api: IAPI = {
 
 	// Checkouts
 	getAllCheckouts,
+	getCheckoutsByMemberID,
+	postNewCheckouts,
+	patchReturnCheckout,
 
 	// Events
 	getAllEvents,
@@ -184,5 +251,6 @@ export const api: IAPI = {
 
 	// Members
 	getAllMembers,
-	getMemberByID
+	getMemberByID,
+	postCreateNewMember
 };

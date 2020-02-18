@@ -49,6 +49,7 @@ type Person struct {
 
 type Member struct {
 	Person
+	ImageURL  string     `gorm:"type:varchar(2083)" json:"image_url"`
 	Checkouts []Checkout `json:"checkouts,omitempty"`
 }
 

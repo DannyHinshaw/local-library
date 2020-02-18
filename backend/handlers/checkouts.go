@@ -5,17 +5,28 @@ import (
 	"errors"
 	"github.com/gorilla/mux"
 	uuid "github.com/satori/go.uuid"
+	gormbulk "github.com/t-tiger/gorm-bulk-insert"
+	"log"
 	"main/db"
 	"net/http"
 	"time"
 )
 
-type CheckoutsResponse struct {
-	Data []db.Checkout `json:"data"`
+type PostCheckouts struct {
+	MemberID uuid.UUID `json:"member_id"`
+	ISBNs    []string  `json:"isbns"`
 }
 
 type CheckoutResponse struct {
 	Data db.Checkout `json:"data"`
+}
+
+type CheckoutsResponse struct {
+	Data []db.Checkout `json:"data"`
+}
+
+type CheckoutsResponseInterface struct {
+	Data []interface{} `json:"data"`
 }
 
 type CheckoutQueryPayload struct {
@@ -25,6 +36,16 @@ type CheckoutQueryPayload struct {
 
 // Common request errors
 var errorBookID = errors.New("book id missing in request")
+
+// containsString - Helper func to check slice for presence of an isbn.
+func containsString(s []string, e string) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
+}
 
 // queryCheckoutWithParamBookID - Build gorm book query with id from url params.
 func queryCheckoutWithParams(r *http.Request) (*db.Checkout, error) {
@@ -89,20 +110,53 @@ func GetCheckoutsByMemberID(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// PostNewCheckout - Checkout a book for a member.
-func PostNewCheckout(w http.ResponseWriter, r *http.Request) {
-	var checkout db.Checkout
+// PostNewCheckouts - Checkout a multiple books for a member.
+func PostNewCheckouts(w http.ResponseWriter, r *http.Request) {
+	var postCheckouts PostCheckouts
 	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&checkout)
+	err := decoder.Decode(&postCheckouts)
 	if err != nil {
 		HandleErrorResponse(w, err, http.StatusBadRequest)
 		return
 	}
 
-	checkout.CheckedOut = time.Now()
-	db.MySQL.Create(&checkout)
-	json.NewEncoder(w).Encode(CheckoutResponse{
-		Data: checkout,
+	// Get all copies for a range of ISBNs
+	var bookCopies []db.Copy
+	var copyQueries []string
+	for _, isbn := range postCheckouts.ISBNs {
+		copyQueries = append(copyQueries, isbn)
+	}
+	db.MySQL.Where("isbn IN (?)", copyQueries).Find(&bookCopies)
+
+	var usedISBNs []string
+	var checkouts []interface{}
+	for _, bookCopy := range bookCopies {
+
+		// Only get one bookCopy per isbn
+		if containsString(usedISBNs, bookCopy.ISBN) {
+			continue
+		}
+
+		newCheckout := db.Checkout{
+			Base: db.Base{
+				CreatedAt: time.Now(),
+				UpdatedAt: time.Now(),
+			},
+			BookID:     bookCopy.ID,
+			MemberID:   postCheckouts.MemberID,
+			CheckedOut: time.Now(),
+		}
+		checkouts = append(checkouts, newCheckout)
+		usedISBNs = append(usedISBNs, bookCopy.ISBN)
+	}
+
+	errBulkCheckouts := gormbulk.BulkInsert(db.MySQL, checkouts, 3000)
+	if errBulkCheckouts != nil {
+		log.Println(errBulkCheckouts.Error())
+		return
+	}
+	json.NewEncoder(w).Encode(CheckoutsResponseInterface{
+		Data: checkouts,
 	})
 }
 

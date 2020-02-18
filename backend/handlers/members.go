@@ -128,6 +128,9 @@ func PatchUpdateMember(w http.ResponseWriter, r *http.Request) {
 
 	// Update only what's supplied
 	updates := map[string]interface{}{}
+	if member.ImageURL != "" {
+		updates["image_url"] = member.ImageURL
+	}
 	if member.FirstName != "" {
 		updates["first_name"] = member.FirstName
 	}

@@ -9,6 +9,7 @@ import React, { ChangeEvent, ComponentType, useState } from "react";
 import { api, IPatchUpdateBookPayload } from "../../api";
 import { IBook, StateSetter } from "../../types";
 import AuthorSelect from "../AuthorSelect";
+import ErrorSpan from "../ErrorSpan";
 import SubmitButton from "../SubmitButton";
 
 
@@ -112,15 +113,7 @@ const BookEditDialog: ComponentType<IBookEditDialog> = (props: IBookEditDialog):
 							<br />
 						</div>
 
-						{error && (
-							<>
-								<br />
-								<div style={{ textAlign: "center" }}>
-									<Typography style={{ margin: "0 auto", width: "75%" }} color="error">
-										{error}
-									</Typography>
-								</div>
-							</>)}
+						<ErrorSpan error={error} />
 
 						<DialogActions>
 							<Button onClick={handleClose} color="primary">

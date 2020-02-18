@@ -48,8 +48,9 @@ export interface IPerson extends IBase {
 	id: string
 }
 
-export interface IMembers extends IPerson {
+export interface IMember extends IPerson {
 	checkouts: ICheckout[]
+	image_url: string
 }
 
 export interface IAuthor extends IPerson {

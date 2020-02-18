@@ -7,6 +7,7 @@ import reduxThunk from "redux-thunk";
 import authorsReducer from "./reducers/authorsReducer";
 import booksReducer from "./reducers/booksReducer";
 import checkoutsReducer from "./reducers/checkoutsReducer";
+import membersReducer from "./reducers/membersReducer";
 
 
 // Persist store to session storage for refresh
@@ -27,6 +28,7 @@ const persistConfig: PersistConfig<any> = {
  */
 const rootReducer: Reducer = combineReducers({
 	checkouts: checkoutsReducer,
+	members: membersReducer,
 	authors: authorsReducer,
 	books: booksReducer
 });

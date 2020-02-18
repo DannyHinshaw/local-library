@@ -4,10 +4,10 @@ import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
 import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
-import Typography from "@material-ui/core/Typography";
 import React, { ComponentType, useState } from "react";
 import { api } from "../../api";
 import { IBook, StateSetter } from "../../types";
+import ErrorSpan from "../ErrorSpan";
 import SubmitButton from "../SubmitButton";
 
 
@@ -56,15 +56,7 @@ const BookDeleteDialog: ComponentType<IBookDeleteDialogProps> = (props: IBookDel
 					</DialogContentText>
 				</DialogContent>
 
-				{error && (
-					<>
-						<br />
-						<div style={{ textAlign: "center" }}>
-							<Typography style={{ margin: "0 auto", width: "75%" }} color="error">
-								{error}
-							</Typography>
-						</div>
-					</>)}
+				<ErrorSpan error={error} />
 
 				<DialogActions>
 					<Button onClick={handleClose} color="primary">
