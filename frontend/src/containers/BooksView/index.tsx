@@ -1,5 +1,7 @@
 import { Button } from "@material-ui/core";
 import AddIcon from "@material-ui/icons/Add";
+import GetAppOutlinedIcon from "@material-ui/icons/GetAppOutlined";
+import { Parser } from "json2csv";
 import React, { ComponentType, useEffect, useState } from "react";
 import Masonry from "react-masonry-css";
 import { connect } from "react-redux";
@@ -11,9 +13,9 @@ import { authorsSet, booksSet, checkoutsSet } from "../../store/actions";
 import { AuthorsState } from "../../store/reducers/authorsReducer";
 import { BookState } from "../../store/reducers/booksReducer";
 import { CheckoutsState } from "../../store/reducers/checkoutsReducer";
-import { IBook, IBookCopy, ICheckout, OrNull } from "../../types";
+import { IAuthor, IBook, IBookCopy, ICheckout, OrNull } from "../../types";
+import { getPersonName } from "../../util/data";
 import "./styles.scss";
-
 
 const breakpointColumnsObj = {
 	default: 4,
@@ -21,6 +23,15 @@ const breakpointColumnsObj = {
 	700: 2,
 	500: 1
 };
+
+export interface IBookReport {
+	ISBN: string
+	Title: string
+	Authors: string
+	Description: string
+	TotalCopies: number
+	CopiesCheckedOut: number
+}
 
 export interface IBooksView {
 	checkoutsSet: typeof checkoutsSet
@@ -141,6 +152,61 @@ const BooksView: ComponentType<IBooksView> = (props: IBooksView): JSX.Element =>
 		});
 	};
 
+	const downloadCSV = (csv: string, filename: string) => {
+		let csvFile;
+		let downloadLink;
+		if (window.Blob == undefined || window.URL == undefined || window.URL.createObjectURL == undefined) {
+			alert("Your browser doesn't support Blobs");
+			return;
+		}
+
+		csvFile = new Blob([csv], { type: "text/csv" });
+		downloadLink = document.createElement("a");
+		downloadLink.download = filename;
+		downloadLink.href = window.URL.createObjectURL(csvFile);
+		downloadLink.style.display = "none";
+		document.body.appendChild(downloadLink);
+		downloadLink.click();
+	};
+
+	const buildReport = () => {
+		if (!props.books.length) {
+			console.error("No book data to make report.");
+			return;
+		}
+
+		const allReports = props.books.reduce((reports: IBookReport[], book: IBook) => {
+			const authorsCombined = Object.keys(book.authors).reduce((base: string, key: string, i: number) => {
+				const author: IAuthor = book.authors[key];
+				const name = getPersonName(author);
+				if (i > 0) {
+					return base.concat(", ", name);
+				}
+				return name;
+			}, "");
+
+			const { aggregates } = book;
+			const numCopies = aggregates && aggregates.number_of_copies || 0;
+			const numCheckedOut = aggregates && aggregates.number_checked_out || 0;
+			return reports.concat({
+				ISBN: book.isbn,
+				Title: book.title,
+				Authors: authorsCombined,
+				Description: book.description,
+				TotalCopies: numCopies,
+				CopiesCheckedOut: numCheckedOut
+			});
+		}, []);
+
+		const fields = Object.keys(allReports[0]);
+		const json2csvParser = new Parser({ fields });
+		const csvContent = json2csvParser.parse(allReports);
+
+		const dateString = new Date().toLocaleDateString();
+		const fileName = `book-report-${dateString}`;
+		downloadCSV(csvContent, fileName);
+	};
+
 	return loading
 		? <LoaderCircle size={100} />
 		: (
@@ -153,12 +219,21 @@ const BooksView: ComponentType<IBooksView> = (props: IBooksView): JSX.Element =>
 						color="secondary"
 						size="large"
 					>
-						Add New Book
+						New Book
 					</Button>
 					<BookCreateDialog
 						setRefresh={setRefresh}
 						setOpen={setOpenCreateDialog}
 						open={openCreateDialog} />
+					<Button
+						onClick={buildReport}
+						startIcon={<GetAppOutlinedIcon />}
+						variant="contained"
+						color="secondary"
+						size="large"
+					>
+						Report
+					</Button>
 				</div>
 				<br />
 				<Masonry

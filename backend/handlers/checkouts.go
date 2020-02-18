@@ -155,6 +155,7 @@ func PostNewCheckouts(w http.ResponseWriter, r *http.Request) {
 		log.Println(errBulkCheckouts.Error())
 		return
 	}
+
 	json.NewEncoder(w).Encode(CheckoutsResponseInterface{
 		Data: checkouts,
 	})

@@ -23,8 +23,8 @@ const MenuProps = {
 
 export interface IBooksSelectProps {
 	setBookISBNs: StateSetter<string[]>
-	booksAvailable: BookState
 	bookISBNs: string[]
+	books: BookState
 }
 
 
@@ -34,7 +34,11 @@ export interface IBooksSelectProps {
  * @constructor
  */
 const BooksSelect: ComponentType<IBooksSelectProps> = (props: IBooksSelectProps): JSX.Element => {
-	const booksList = (props.booksAvailable ? props.booksAvailable : []).sort((a, b) => {
+
+	// Only show books that don't have all copies checked out.
+	const booksList = (props.books ? props.books : []).filter(b => {
+		return b.aggregates.number_available > 0;
+	}).sort((a, b) => {
 		return a.title.localeCompare(b.title);
 	});
 

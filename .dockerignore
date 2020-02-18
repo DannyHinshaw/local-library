@@ -3,3 +3,4 @@
 .gitignore
 docker-compose.yml
 Dockerfile
+frontend/node_modules

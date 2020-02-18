@@ -39,6 +39,21 @@ type BookResponse struct {
 	Data db.Book `json:"data"`
 }
 
+type BookAggregates struct {
+	NumberOfCopies   int `json:"number_of_copies"`
+	NumberCheckedOut int `json:"number_checked_out"`
+	NumberAvailable  int `json:"number_available"`
+}
+
+type BookWithAggregates struct {
+	db.Book
+	Aggregates BookAggregates `json:"aggregates,omitempty"`
+}
+
+type BooksAggregatesResponse struct {
+	Data []BookWithAggregates `json:"data"`
+}
+
 // Common request errors
 var errorBookISBN = errors.New("book isbn missing in request")
 
@@ -78,14 +93,50 @@ func queryBookWithParamID(r *http.Request) (*db.Copy, error) {
 	return query, nil
 }
 
+// getBooksWithAggregates - Builds aggregate data on book copy checkout statuses.
+func getBooksWithAggregates(allBooks []db.Book, checkouts []db.Checkout) []BookWithAggregates {
+	var allBooksWithAggs []BookWithAggregates
+	for _, book := range allBooks {
+		totalCopies := len(book.Copies)
+		if totalCopies < 1 {
+			continue
+		}
+
+		numCheckedOut := 0
+		for _, bookCopy := range book.Copies {
+			for _, checkout := range checkouts {
+				if checkout.BookID == bookCopy.ID {
+					numCheckedOut++
+				}
+			}
+		}
+
+		bookWithAggs := BookWithAggregates{
+			Book: book,
+			Aggregates: BookAggregates{
+				NumberOfCopies:   totalCopies,
+				NumberCheckedOut: numCheckedOut,
+				NumberAvailable:  totalCopies - numCheckedOut,
+			},
+		}
+
+		allBooksWithAggs = append(allBooksWithAggs, bookWithAggs)
+	}
+
+	return allBooksWithAggs
+}
+
 // GetAllBooks - Get all books records.
 func GetAllBooks(w http.ResponseWriter, r *http.Request) {
-	// TODO: Add optional param `/available` for
-	// 	client to get only books with copies available.
+	var allCheckouts []db.Checkout
+	db.MySQL.Find(&allCheckouts)
+
 	var allBooks []db.Book
 	db.GetAllBooksWithRelations(&allBooks)
-	json.NewEncoder(w).Encode(BooksResponse{
-		Data: allBooks,
+
+	allBooksWithAggs := getBooksWithAggregates(allBooks, allCheckouts)
+	json.NewEncoder(w).Encode(BooksAggregatesResponse{
+		Data: allBooksWithAggs,
 	})
 }
 

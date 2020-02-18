@@ -26,7 +26,14 @@ export interface IBookBase extends IBase {
 	title: string
 }
 
+export interface IBookAggregates {
+	number_of_copies: number
+	number_checked_out: number
+	number_available: number
+}
+
 export interface IBook extends IBookBase {
+	aggregates: IBookAggregates
 	description: string
 	authors: IAuthor[]
 	copies: IBookCopy[]
