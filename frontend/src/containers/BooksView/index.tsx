@@ -175,7 +175,7 @@ const BooksView: ComponentType<IBooksView> = (props: IBooksView): JSX.Element =>
 			return;
 		}
 
-		const reports = props.books.reduce((reports: IBookReport[], book: IBook) => {
+		const allReports = props.books.reduce((reports: IBookReport[], book: IBook) => {
 			const authorsCombined = Object.keys(book.authors).reduce((base: string, key: string, i: number) => {
 				const author: IAuthor = book.authors[key];
 				const name = getPersonName(author);
@@ -198,9 +198,9 @@ const BooksView: ComponentType<IBooksView> = (props: IBooksView): JSX.Element =>
 			});
 		}, []);
 
-		const fields = Object.keys(reports[0]);
+		const fields = Object.keys(allReports[0]);
 		const json2csvParser = new Parser({ fields });
-		const csvContent = json2csvParser.parse(reports);
+		const csvContent = json2csvParser.parse(allReports);
 
 		const dateString = new Date().toLocaleDateString();
 		const fileName = `book-report-${dateString}`;
