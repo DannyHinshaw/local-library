@@ -33,6 +33,6 @@ Assumptions made from the list of requirements. Most are to save time as this is
 docker-compose up --build
 ```
 
-The first build takes some time... maybe grab a cup of java while you wait :coffee: (subsequent build are way faster).
+The first build takes some time... maybe grab a cup of java while you wait :coffee: (subsequent builds are way faster).
 
 Once all services are available, visit `http://localhost:8000/` in your favorite browser.
