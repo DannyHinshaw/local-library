@@ -33,4 +33,4 @@ Assumptions made from the list of requirements. Most are to save time as this is
 docker-compose up --build
 ```
 
-Once all services are available, visit `http://localhost:3000/` in your favorite browser.
+Once all services are available, visit `http://localhost:8000/` in your favorite browser.
