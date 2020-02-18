@@ -17,7 +17,12 @@
 }
 
 #bookControlsContainer {
-  text-align: center;
+  display: flex;
+  justify-content: center;
+
+  button {
+    width: 10rem;
+  }
 
   div {
     margin: 1rem;

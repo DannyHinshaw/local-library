@@ -79,7 +79,7 @@ const MemberCheckoutDialog: ComponentType<IMemberCheckoutDialogProps> = (props: 
 						<BooksSelect
 							bookISBNs={bookISBNs}
 							setBookISBNs={setBookISBNs}
-							booksAvailable={props.books}
+							books={props.books}
 						/>
 					</DialogContent>}
 
