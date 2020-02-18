@@ -136,6 +136,7 @@ func main() {
 	// Run our server in a goroutine so that it doesn't block.
 	go func() {
 		log.Println("server listening @", address)
+		log.Println("application is ready, view it in browser @ http://localhost:8000")
 		if err := srv.ListenAndServe(); err != nil {
 			log.Println(err)
 		}
