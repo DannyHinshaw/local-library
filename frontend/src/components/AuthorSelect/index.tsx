@@ -42,7 +42,6 @@ const AuthorSelect: ComponentType<IAuthorSelectProps> = (props: IAuthorSelectPro
 
 	const handleChange = (event: ChangeEvent<{ value: unknown }>) => {
 		const ids = event.target.value as string[];
-		console.log("handleChange::ids", ids);
 		props.setAuthorIDs(ids);
 	};
 

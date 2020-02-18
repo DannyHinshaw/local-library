@@ -10,6 +10,7 @@ import { CheckoutsState } from "../../store/reducers/checkoutsReducer";
 import { IMember, OrNull, StateSetter } from "../../types";
 import { getPersonName } from "../../util/data";
 import BooksSelect from "../BooksSelect";
+import LoaderCircle from "../LoaderCircle";
 import SubmitButton from "../SubmitButton";
 
 
@@ -34,25 +35,17 @@ const MemberCheckoutDialog: ComponentType<IMemberCheckoutDialogProps> = (props: 
 	const member_id = props.member.id;
 
 	const [bookISBNs, setBookISBNs] = useState([] as string[]);
-	const [loading, setLoading] = useState(true);
+	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState(null as OrNull<string>);
 
-	// TODO: If there's time, filter books by only those available.
-	// const booksAvailable = props.books.filter((base: IBook[], curr: book) => {
-	// 	const isCheckedOut = props.checkouts.some(c => {
-	// 		return c.
-	// 	})
-	// }, [])
-
 	const handleSubmit = () => {
-		console.log("bookISBNs::", bookISBNs);
-		return Promise.resolve();
 		setLoading(true);
 		return api.postNewCheckouts({
 			isbns: bookISBNs,
 			member_id
 		}).then(res => {
 			setLoading(false);
+			setBookISBNs([]);
 			props.setRefresh(true);
 		}).catch(e => {
 			setLoading(false);
@@ -80,13 +73,15 @@ const MemberCheckoutDialog: ComponentType<IMemberCheckoutDialogProps> = (props: 
 					</span>
 				</DialogTitle>
 
-				<DialogContent dividers={true} style={{ textAlign: "center", padding: 0 }}>
-					<BooksSelect
-						bookISBNs={bookISBNs}
-						setBookISBNs={setBookISBNs}
-						booksAvailable={props.books}
-					/>
-				</DialogContent>
+				{loading
+					? <LoaderCircle size={50} height={75} />
+					: <DialogContent dividers={true} style={{ textAlign: "center", padding: 0 }}>
+						<BooksSelect
+							bookISBNs={bookISBNs}
+							setBookISBNs={setBookISBNs}
+							booksAvailable={props.books}
+						/>
+					</DialogContent>}
 
 				<DialogActions>
 					<Button onClick={handleClose} color="primary">

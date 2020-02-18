@@ -83,7 +83,7 @@ const BooksView: ComponentType<IBooksView> = (props: IBooksView): JSX.Element =>
 	});
 
 	useEffect(() => {
-		if (!props.books.length && !props.checkouts.length) {
+		if (refresh || !props.books.length && !props.checkouts.length) {
 			Promise.all([
 				fetchBooks(),
 				fetchAuthors(),
@@ -105,7 +105,7 @@ const BooksView: ComponentType<IBooksView> = (props: IBooksView): JSX.Element =>
 		} else {
 			stopLoader();
 		}
-	}, []);
+	}, [refresh]);
 
 	const sortBooksByTitle = (a, b): number => {
 		return a.title.localeCompare(b.title);
@@ -160,7 +160,7 @@ const BooksView: ComponentType<IBooksView> = (props: IBooksView): JSX.Element =>
 						setOpen={setOpenCreateDialog}
 						open={openCreateDialog} />
 				</div>
-
+				<br />
 				<Masonry
 					className="my-masonry-grid"
 					breakpointCols={breakpointColumnsObj}

@@ -4,9 +4,9 @@ import React, { ComponentType, useEffect, useState } from "react";
 import Masonry from "react-masonry-css";
 import { connect } from "react-redux";
 import { api } from "../../api";
-import BookCreateDialog from "../../components/BookCreateDialog";
 import LoaderCircle from "../../components/LoaderCircle";
 import MemberCard from "../../components/MemberCard";
+import MemberCreateDialog from "../../components/MemberCreateDialog";
 import { authorsSet, booksSet, checkoutsSet, membersSet } from "../../store/actions";
 import { BookState } from "../../store/reducers/booksReducer";
 import { CheckoutsState } from "../../store/reducers/checkoutsReducer";
@@ -84,14 +84,13 @@ const MembersView: ComponentType<IMembersView> = (props: IMembersView): JSX.Elem
 	});
 
 	useEffect(() => {
-		if (!props.books.length || !props.members.length) {
+		if (refresh || !props.books.length || !props.members.length) {
+			setRefresh(false);
 			Promise.all([
 				fetchBooks(),
 				fetchMembers(),
 				fetchCheckouts()
 			]).then((hasData) => {
-				console.log("hasData::", hasData);
-				console.log("!hasData[0]::", !hasData[0]);
 
 				// Seed the database if there's no test data yet.
 				if (!hasData[0]) {
@@ -106,7 +105,7 @@ const MembersView: ComponentType<IMembersView> = (props: IMembersView): JSX.Elem
 		} else {
 			stopLoader();
 		}
-	}, []);
+	}, [refresh]);
 
 	const sortBooksByTitle = (a, b): number =>
 		a.title.localeCompare(b.title);
@@ -139,12 +138,12 @@ const MembersView: ComponentType<IMembersView> = (props: IMembersView): JSX.Elem
 					>
 						Add Member
 					</Button>
-					<BookCreateDialog
+					<MemberCreateDialog
 						setRefresh={setRefresh}
 						setOpen={setOpenCreateDialog}
 						open={openCreateDialog} />
 				</div>
-
+				<br />
 				<div id="masonryContainer">
 					<Masonry
 						className="my-masonry-grid"

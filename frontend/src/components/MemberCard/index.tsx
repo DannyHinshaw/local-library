@@ -116,8 +116,8 @@ const MemberCard: ComponentType<IMemberCardProps> = (props: IMemberCardProps): J
 						src={props.member.image_url}
 						fallbackImage={defaultImageURL}
 						initialImage={initialImageURL}
-						style={{ maxHeight: 140 }}
-						alt="Book Cover" />
+						style={{ maxHeight: 140, borderRadius: "50%" }}
+						alt="Member Avatar" />
 				</CardMedia>
 				<CardContent>
 

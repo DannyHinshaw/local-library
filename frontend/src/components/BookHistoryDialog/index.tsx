@@ -82,9 +82,6 @@ const BookHistoryDialog: ComponentType<IBookHistoryDialogProps> = (props: IBookH
 					<Button onClick={handleClose} color="primary">
 						Close
 					</Button>
-					<Button onClick={handleClose} color="primary">
-						Download
-					</Button>
 				</DialogActions>
 			</Dialog>
 		</div>

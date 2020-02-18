@@ -40,7 +40,6 @@ const BooksSelect: ComponentType<IBooksSelectProps> = (props: IBooksSelectProps)
 
 	const handleChange = (event: ChangeEvent<{ value: unknown }>) => {
 		const isbns = event.target.value as string[];
-		console.log("handleChange::isbns", isbns);
 		props.setBookISBNs(isbns);
 	};
 

@@ -13,10 +13,12 @@ import ChevronLeftIcon from "@material-ui/icons/ChevronLeftOutlined";
 import ChevronRightIcon from "@material-ui/icons/ChevronRightOutlined";
 import LibraryBooksIcon from "@material-ui/icons/LibraryBooksOutlined";
 import MenuIcon from "@material-ui/icons/MenuOutlined";
+import PeopleIcon from "@material-ui/icons/PeopleOutline";
 import SupervisorAccountIcon from "@material-ui/icons/SupervisorAccountOutlined";
 import clsx from "clsx";
 import React, { ComponentType, useState } from "react";
 import { AppView } from "../../App";
+import AuthorsView from "../../containers/AuthorsView";
 import BooksView from "../../containers/BooksView";
 import MembersView from "../../containers/MembersView";
 import Header from "../Header";
@@ -104,14 +106,11 @@ const NavDrawer: ComponentType = (): JSX.Element => {
 
 	// Toggle current view
 	const currentView = (): JSX.Element => {
-		return <MembersView />;
 		switch (view) {
 			case AppView.BOOKS:
 				return <BooksView />;
 			case AppView.AUTHORS:
-				// FIXME: Do authors only if there's time
-				// return <AuthorsView />;
-				return <MembersView />;
+				return <AuthorsView />;
 			case AppView.MEMBERS:
 				return <MembersView />;
 			default:
@@ -175,19 +174,17 @@ const NavDrawer: ComponentType = (): JSX.Element => {
 						<ListItemText primary="Books" />
 					</ListItem>
 
-					{/* FIXME: Do authors only if there's time */}
-					{/* Authors */}
-					{/*<ListItem*/}
-					{/*	onClick={handleMenuItemClick(2)}*/}
-					{/*	selected={view === AppView.AUTHORS}*/}
-					{/*	style={{ minWidth: 46 }}*/}
-					{/*	button={true}*/}
-					{/*	key="Authors">*/}
-					{/*	<ListItemIcon>*/}
-					{/*		<PeopleIcon />*/}
-					{/*	</ListItemIcon>*/}
-					{/*	<ListItemText primary="Authors" />*/}
-					{/*</ListItem>*/}
+					<ListItem
+						onClick={handleMenuItemClick(2)}
+						selected={view === AppView.AUTHORS}
+						style={{ minWidth: 46 }}
+						button={true}
+						key="Authors">
+						<ListItemIcon>
+							<PeopleIcon />
+						</ListItemIcon>
+						<ListItemText primary="Authors" />
+					</ListItem>
 
 					{/* Members */}
 					<ListItem
